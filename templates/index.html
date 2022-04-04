@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OnlyBans</title>
+    <script>
+function goJoin(){
+    join_id_input = document.getElementById('join_id_input');
+    join_draft_id = join_id_input.value;
+    window.location = "{{url_for('join_draft', draft_id='')}}"+join_draft_id);
+}
+function goWatch(){
+    watch_id_input = document.getElementById('watch_id_input');
+    watch_draft_id = watch_id_input.value;
+    window.location = "{{url_for('watch_draft', draft_id='')}}"+watch_draft_id;
+}
+    </script>
+</head>
+<body>
+<h1>OnlyBans</h1>
+</body>
+<div>
+<p>Host the bans:</p>
+    <a href="{{url_for('new_draft', draft_template='bo3')}}">Best of 3</a>
+    <a href="{{url_for('new_draft', draft_template='bo5')}}">Best of 5</a>
+    <a href="{{url_for('new_draft', draft_template='bo7')}}">Best of 7</a>
+</div>
+<div>
+<p>Join the bans:</p>
+    <input id="join_id_input" class="input" placeholder="enter draft code here"></input>
+    <a href="" onclick="goJoin()">Join</a>
+</div>
+<div>
+<p>Watch the bans:</p>
+    <input id="watch_id_input" class="input" placeholder="enter draft code here"></input>
+    <a href="" onclick="goWatch()">Watch</a>
+</div>
+
+</html>

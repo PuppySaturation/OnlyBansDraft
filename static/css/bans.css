@@ -1,0 +1,47 @@
+h1, h2 {
+  text-align: center;
+}
+
+.map_icon {
+  height : 80pt;
+  width : 80pt;
+}
+
+.civ_icon {
+  height : 60pt;
+  width: 60pt;
+}
+
+#mapList, #civList, #guestBans, #hostBans {
+  text-align: center;
+}
+
+#guestBans {
+  float: left;
+  width: 45%;
+}
+
+#hostBans {
+  float: right;
+  width: 45%;
+}
+
+.round_selection {
+  clear:left;
+  text-align: center;
+  display: inline-block;
+  margin-left: 15pt;
+  margin-right: 15pt;
+}
+
+.host_civ_selection {
+  display: inline-block;
+}
+
+.map_selection {
+  display: inline-block;
+}
+
+.guest_civ_selection {
+  display: inline-block;
+}
