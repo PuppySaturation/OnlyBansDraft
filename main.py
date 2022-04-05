@@ -3,6 +3,7 @@ import os
 import re
 import tempfile
 import json
+import filelock
 
 maps_icon_list = {
     'acropolis' : 'MapsIcons/rm_acropolis.png',
@@ -19,7 +20,7 @@ maps_icon_list = {
     'runestones' : 'MapsIcons/rm_runestones.png',
     'socotra' : 'MapsIcons/rm_socotra.png',
 }
-civs_icon_list  = {
+civs_icon_list = {
     'aztecs' : 'CivIcons/aztecs.png',
     'berbers' : 'CivIcons/berbers.png',
     'bohemians' : 'CivIcons/bohemians.png',
@@ -63,81 +64,116 @@ civs_icon_list  = {
 
 app = Quart(__name__)
 
+
+def load_draft_file(draft_id):
+    data_path = os.path.join(app.root_path, 'data/', f'bans_{draft_id}.json')
+    #with filelock.SoftFileLock(data_path):
+    draft_json = json.load(open(data_path, 'r'))
+    return draft_json
+
+
+def update_draft_file(draft_id, draft_json):
+    data_path = os.path.join(app.root_path, 'data/', f'bans_{draft_id}.json')
+    #with filelock.SoftFileLock(data_path):
+    draft_json_old = json.load(open(data_path, 'r'))
+    draft_json_old.update(draft_json)
+    json.dump(draft_json_old, open(data_path, 'w'))
+
+
 @app.route("/")
 async def index():
     return await render_template("index.html")
 
+
 @app.route("/new/<string:draft_template>")
 async def new_draft(draft_template):
+    draft_json = {
+        'template': draft_template,
+    }
     if draft_template == 'bo3':
-        pass
+        draft_json.update({
+            'rounds': 3,
+            'map_bans': 3,
+            'civ_bans': 3,
+            'insta_bans': 1,
+        })
     elif draft_template == 'bo5':
-        pass
+        draft_json.update({
+            'rounds': 5,
+            'map_bans': 3,
+            'civ_bans': 5,
+            'insta_bans': 1,
+        })
     elif draft_template == 'bo7':
-        pass
+        draft_json.update({
+            'rounds': 7,
+            'map_bans': 3,
+            'civ_bans': 7,
+            'insta_bans': 2,
+        })
     else:
         return f'No template for: "{draft_template}"', 404
 
     data_dir = os.path.join(app.root_path, 'data/')
     if not os.path.exists(data_dir):
         os.mkdir(data_dir)
-
     file_desc, file_path = tempfile.mkstemp(prefix='bans_', suffix='.json', dir=data_dir)
     file_obj = os.fdopen(file_desc, 'w')
-    code_match = re.match('.*data/bans_(.+)\.json', file_path)
+    code_match = re.match('.*data/bans_(.+)\\.json', file_path)
     if not code_match:
         raise Exception(f'data file doesnt match expected format: {file_path}')
     draft_id = code_match.groups()[0]
-    draft_json = {
-        'template':draft_template,
-        'draft_id':draft_id,
-    }
+    draft_json['draft_id'] = draft_id
 
     json.dump(draft_json, file_obj)
+    file_obj.close()
 
-    return redirect(url_for(f'host_draft',draft_id=draft_id))
+    return redirect(url_for(f'host_draft', draft_id=draft_id))
 
 
 @app.route("/host/<string:draft_id>")
 async def host_draft(draft_id):
+    draft_json = load_draft_file(draft_id)
     template_params = {
         'type': 'host',
         'draft_id': draft_id,
         'maps_list': maps_icon_list,
         'civs_list': civs_icon_list,
-        'rounds': 7,
-        'map_bans': 3,
-        'civ_bans': 7,
-        'insta_bans': 2,
+        'rounds': draft_json['rounds'],
+        'map_bans': draft_json['map_bans'],
+        'civ_bans': draft_json['civ_bans'],
+        'insta_bans': draft_json['insta_bans'],
     }
     return await render_template("bans.html", **template_params)
 
 
 @app.route("/join/<string:draft_id>")
 async def join_draft(draft_id):
+    draft_json = load_draft_file(draft_id)
     template_params = {
         'type': 'join',
         'draft_id': draft_id,
         'maps_list': maps_icon_list,
         'civs_list': civs_icon_list,
-        'rounds': 7,
-        'map_bans': 3,
-        'civ_bans': 7,
-        'insta_bans': 2,
+        'rounds': draft_json['rounds'],
+        'map_bans': draft_json['map_bans'],
+        'civ_bans': draft_json['civ_bans'],
+        'insta_bans': draft_json['insta_bans'],
     }
     return await render_template("bans.html", **template_params)
 
 @app.route("/watch/<string:draft_id>")
 async def watch_draft(draft_id):
+    draft_json = load_draft_file(draft_id)
     template_params = {
         'type': 'watch',
         'draft_id': draft_id,
         'maps_list': maps_icon_list,
         'civs_list': civs_icon_list,
-        'rounds': 7,
-        'map_bans': 3,
-        'civ_bans': 7,
-        'insta_bans': 2,
+        'rounds': draft_json['rounds'],
+        'map_bans': draft_json['map_bans'],
+        'civ_bans': draft_json['civ_bans'],
+        'insta_bans': draft_json['insta_bans'],
     }
     return await render_template("bans.html", **template_params)
 
