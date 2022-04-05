@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <title>OnlyBans</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bans.css') }}">
+    <script src="{{url_for('static', filename='js/bans.js') }}"></script>
+    <script>
+    window.addEventListener('DOMContentLoaded', (event)=>{
+        init("{{type}}", "{{draft_id}}");
+        });
+    </script>
 </head>
 <body>
 <h1>OnlyBans</h1>
@@ -76,13 +82,14 @@
     {% endfor %}
 </div>
 
-<p>
+<p id="messageText">Waiting for opponent to join.</p>
+<p id="civBansText">
     Number of civ bans remaining <span>{{civ_bans}}</span>/{{civ_bans}}
 </p>
-<p>
+<p id="mapBansText">
     Number of map bans remaining <span>{{map_bans}}</span>/{{map_bans}}
 </p>
-<p>
+<p id="instaBansText">
     Number of insta bans remaining <span>{{insta_bans}}</span>/{{insta_bans}}
 </p>
 
