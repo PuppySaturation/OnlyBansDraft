@@ -1,4 +1,8 @@
-from quart import Quart, render_template, url_for, redirect
+from quart import Quart, render_template, url_for, redirect, app
+import os
+import re
+import tempfile
+import json
 
 maps_icon_list = {
     'acropolis' : 'MapsIcons/rm_acropolis.png',
@@ -74,13 +78,31 @@ async def new_draft(draft_template):
     else:
         return f'No template for: "{draft_template}"', 404
 
-    draft_id = 'xxxxxx'
+    data_dir = os.path.join(app.root_path, 'data/')
+    if not os.path.exists(data_dir):
+        os.mkdir(data_dir)
+
+    file_desc, file_path = tempfile.mkstemp(prefix='bans_', suffix='.json', dir=data_dir)
+    file_obj = os.fdopen(file_desc, 'w')
+    code_match = re.match('.*data/bans_(.+)\.json', file_path)
+    if not code_match:
+        raise Exception(f'data file doesnt match expected format: {file_path}')
+    draft_id = code_match.groups()[0]
+    draft_json = {
+        'template':draft_template,
+        'draft_id':draft_id,
+    }
+
+    json.dump(draft_json, file_obj)
 
     return redirect(url_for(f'host_draft',draft_id=draft_id))
+
 
 @app.route("/host/<string:draft_id>")
 async def host_draft(draft_id):
     template_params = {
+        'type': 'host',
+        'draft_id': draft_id,
         'maps_list': maps_icon_list,
         'civs_list': civs_icon_list,
         'rounds': 7,
@@ -94,6 +116,8 @@ async def host_draft(draft_id):
 @app.route("/join/<string:draft_id>")
 async def join_draft(draft_id):
     template_params = {
+        'type': 'join',
+        'draft_id': draft_id,
         'maps_list': maps_icon_list,
         'civs_list': civs_icon_list,
         'rounds': 7,
@@ -106,6 +130,8 @@ async def join_draft(draft_id):
 @app.route("/watch/<string:draft_id>")
 async def watch_draft(draft_id):
     template_params = {
+        'type': 'watch',
+        'draft_id': draft_id,
         'maps_list': maps_icon_list,
         'civs_list': civs_icon_list,
         'rounds': 7,
@@ -114,6 +140,18 @@ async def watch_draft(draft_id):
         'insta_bans': 2,
     }
     return await render_template("bans.html", **template_params)
+
+@app.websocket('/host/ws/<string:draft_id>')
+async def host_ws(draft_id):
+    pass
+
+@app.websocket('/join/ws/<string:draft_id>')
+async def join_ws(draft_id):
+    pass
+
+@app.websocket('/watch/ws/<string:draft_id>')
+async def watch_ws(draft_id):
+    pass
 
 
 if __name__ == "__main__":

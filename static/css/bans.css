@@ -12,6 +12,10 @@ h1, h2 {
   width: 60pt;
 }
 
+.banned {
+  filter: grayscale(100%) blur(5px);
+}
+
 #mapList, #civList, #guestBans, #hostBans {
   text-align: center;
 }

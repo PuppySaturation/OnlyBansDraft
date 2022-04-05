@@ -7,7 +7,12 @@
 </head>
 <body>
 <h1>OnlyBans</h1>
-</body>
+<div>
+    {% if type == 'host' %}
+    <p>Share this code to join or watch the draft: <b>{{draft_id}}</b></p>
+    {% endif %}
+</div>
+
 <div id="mapList">
     <p>Maps (click to ban):</p>
     {% for map_key, map_src in maps_list.items() %}
@@ -86,3 +91,4 @@
 </p>
 
 </html>
+</body>
