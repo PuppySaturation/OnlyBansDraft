@@ -1,4 +1,4 @@
-from quart import Quart, render_template, url_for, redirect, app
+from quart import Quart, render_template, url_for, redirect, app, websocket
 import os
 import re
 import tempfile
@@ -89,6 +89,13 @@ async def index():
 async def new_draft(draft_template):
     draft_json = {
         'template': draft_template,
+        'rounds': 0,
+        'map_bans':0,
+        'civ_bans':0,
+        'insta_bans':0,
+        'host_bans': None,
+        'guest_bans': None,
+        'actions': [],
     }
     if draft_template == 'bo3':
         draft_json.update({
@@ -177,13 +184,53 @@ async def watch_draft(draft_id):
     }
     return await render_template("bans.html", **template_params)
 
+def validate_bans(draft_json, bans_json):
+    if 'map_bans' not in bans_json:
+        return 'missing map_bans'
+    if len(bans_json['map_bans']) != draft_json['map_bans']:
+        return f'wrong number of map bans: {len(bans_json["map_bans"])}'
+    for map_id in bans_json['map_bans']:
+        if map_id not in maps_icon_list:
+            return f'unrecognized map: {map_id}'
+    if 'civ_bans' not in bans_json:
+        return 'missing civ_bans'
+    if len(bans_json['civ_bans']) != draft_json['civ_bans']:
+        return f'wrong number of civ bans: {len(bans_json["civ_bans"])}'
+    for civ_id in bans_json['civ_bans']:
+        if civ_id not in civs_icon_list:
+            return f'unrecognized map: {civ_id}'
+
+    return None
+
 @app.websocket('/host/ws/<string:draft_id>')
 async def host_ws(draft_id):
-    pass
+    draft_json = load_draft_file(draft_id)
+    await websocket.send_json(draft_json)
+    while not draft_json['host_bans']:
+        bans_json = await websocket.receive_json()
+        print(f'host received:{bans_json}')
+        validation_res = validate_bans(draft_json, bans_json)
+        if not validation_res:
+            draft_json['host_bans'] = bans_json
+            update_draft_file(draft_id, draft_json)
+            await websocket.send_json({'response': 'ok'})
+        else:
+            await websocket.send_json({'response': validation_res})
 
 @app.websocket('/join/ws/<string:draft_id>')
 async def join_ws(draft_id):
-    pass
+    draft_json = load_draft_file(draft_id)
+    await websocket.send_json(draft_json)
+    while not draft_json['guest_bans']:
+        bans_json = await websocket.receive_json()
+        print(f'host received:{bans_json}')
+        validation_res = validate_bans(draft_json, bans_json)
+        if not validation_res:
+            draft_json['guest_bans'] = bans_json
+            update_draft_file(draft_id, draft_json)
+            await websocket.send_json({'response': 'ok'})
+        else:
+            await websocket.send_json({'response': validation_res})
 
 @app.websocket('/watch/ws/<string:draft_id>')
 async def watch_ws(draft_id):

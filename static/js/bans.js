@@ -9,6 +9,7 @@ let banned_civ_list = [];
 
 let my_bans_div=undefined;
 
+let ws_connection = undefined;
 let img_placeholder_src = undefined;
 
 function init(view_type, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
@@ -75,6 +76,22 @@ function init(view_type, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
 
     }
 
+    let ws_address = 'ws://'+document.domain+':'+location.port+'/';
+    if(view_type=='host'){
+        ws_address += 'host/'
+    }else
+    if(view_type=='join'){
+        ws_address += 'join/'
+    }else
+    if(view_type=='watch'){
+        ws_address += 'watch/'
+    }
+    ws_address += 'ws/'+draft_id;
+
+    ws_connection = new WebSocket(ws_address);
+    ws_connection.onmessage = (event)=>{
+        console.log(event.data);
+    }
 }
 
 function submit_bans(){
@@ -91,7 +108,7 @@ function submit_bans(){
     };
 
     console.log(bans_submission);
-
+    ws_connection.send(JSON.stringify(bans_submission));
 }
 
 function toggle_banned(element, banned_list){
