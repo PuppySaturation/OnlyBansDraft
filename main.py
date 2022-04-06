@@ -12,7 +12,7 @@ maps_icon_list = {
     'arena' : 'MapsIcons/rm_arena.png',
     'fortress' : 'MapsIcons/rm_fortress.png',
     'golden_pit' : 'MapsIcons/rm_golden-pit.png',
-    'gold_rusn' : 'MapsIcons/rm_gold-rush.png',
+    'gold_rush' : 'MapsIcons/rm_gold-rush.png',
     'hideout' : 'MapsIcons/rm_hideout.png',
     'land_madness' : 'MapsIcons/rm_land_madness.png',
     'megarandom' : 'MapsIcons/rm_megarandom.png',

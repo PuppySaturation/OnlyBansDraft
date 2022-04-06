@@ -49,3 +49,7 @@ h1, h2 {
 .guest_civ_selection {
   display: inline-block;
 }
+
+#messageBoard {
+  display: inline-block;
+}

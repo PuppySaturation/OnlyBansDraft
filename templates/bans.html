@@ -7,7 +7,7 @@
     <script src="{{url_for('static', filename='js/bans.js') }}"></script>
     <script>
     window.addEventListener('DOMContentLoaded', (event)=>{
-        init("{{type}}", "{{draft_id}}");
+        init("{{type}}", "{{draft_id}}", {{map_bans}}, {{civ_bans}}, {{insta_bans}});
         });
     </script>
 </head>
@@ -82,20 +82,16 @@
     {% endfor %}
 </div>
 
-<p id="messageText">Waiting for opponent to join.</p>
-<p id="civBansText">
-    Number of civ bans remaining <span>{{civ_bans}}</span>/{{civ_bans}}
-</p>
-<p id="mapBansText">
-    Number of map bans remaining <span>{{map_bans}}</span>/{{map_bans}}
-</p>
-<p id="instaBansText">
-    Number of insta bans remaining <span>{{insta_bans}}</span>/{{insta_bans}}
-</p>
+<div id="messageBoard">
+    <p id="messageText">Waiting for opponent to join.</p>
+    <p id="mapBansText"></p>
+    <p id="civBansText"></p>
+    <p id="instaBansText"></p>
 
-<p>
-    Age of Empires II © Microsoft Corporation. This utility was created under <a href="https://www.xbox.com/en-us/developers/rules">Microsoft's "Game Content Usage Rules"</a> using assets from Age of Empires II, and it is not endorsed by or affiliated with Microsoft.
-</p>
+    <p>
+        Age of Empires II © Microsoft Corporation. This utility was created under <a href="https://www.xbox.com/en-us/developers/rules">Microsoft's "Game Content Usage Rules"</a> using assets from Age of Empires II, and it is not endorsed by or affiliated with Microsoft.
+    </p>
+</div>
 
-</html>
 </body>
+</html>
