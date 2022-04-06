@@ -7,7 +7,7 @@
 function goJoin(){
     join_id_input = document.getElementById('join_id_input');
     join_draft_id = join_id_input.value;
-    window.location = "{{url_for('join_draft', draft_id='')}}"+join_draft_id);
+    window.location = "{{url_for('join_draft', draft_id='')}}"+join_draft_id;
 }
 function goWatch(){
     watch_id_input = document.getElementById('watch_id_input');

@@ -10,6 +10,7 @@ let banned_civ_list = [];
 let my_bans_div=undefined;
 
 let ws_connection = undefined;
+let ws_updates = undefined;
 let img_placeholder_src = undefined;
 
 function init(view_type, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
@@ -76,21 +77,19 @@ function init(view_type, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
 
     }
 
-    let ws_address = 'ws://'+document.domain+':'+location.port+'/';
-    if(view_type=='host'){
-        ws_address += 'host/'
-    }else
-    if(view_type=='join'){
-        ws_address += 'join/'
-    }else
-    if(view_type=='watch'){
-        ws_address += 'watch/'
+    let ws_update_address = 'ws://'+document.domain+':'+location.port+'/watch/ws/'+draft_id;
+    if(view_type=='host' || view_type=='join'){
+        let ws_address = 'ws://'+document.domain+':'+location.port+'/';
+        ws_address += view_type+'/ws/'+draft_id;
+        ws_connection = new WebSocket(ws_address);
+        ws_connection.onmessage = (event)=>{
+            console.log('CONNECTION',event.data);
+        }
     }
-    ws_address += 'ws/'+draft_id;
 
-    ws_connection = new WebSocket(ws_address);
-    ws_connection.onmessage = (event)=>{
-        console.log(event.data);
+    ws_updates = new WebSocket(ws_update_address);
+    ws_updates.onmessage = (event)=>{
+        console.log('UPDATE',event.data);
     }
 }
 

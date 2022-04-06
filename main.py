@@ -1,8 +1,11 @@
 from quart import Quart, render_template, url_for, redirect, app, websocket
+import asyncio
+from functools import wraps
 import os
 import re
 import tempfile
 import json
+from typing import Union
 import filelock
 
 maps_icon_list = {
@@ -65,19 +68,22 @@ civs_icon_list = {
 app = Quart(__name__)
 
 
-def load_draft_file(draft_id):
+def load_draft_file(draft_id: str) -> dict:
     data_path = os.path.join(app.root_path, 'data/', f'bans_{draft_id}.json')
     #with filelock.SoftFileLock(data_path):
     draft_json = json.load(open(data_path, 'r'))
     return draft_json
 
 
-def update_draft_file(draft_id, draft_json):
+def update_draft_file(draft_id: str, draft_json: dict) -> dict:
     data_path = os.path.join(app.root_path, 'data/', f'bans_{draft_id}.json')
+    draft_json = {k:v for k, v in draft_json.items() if v}
+
     #with filelock.SoftFileLock(data_path):
-    draft_json_old = json.load(open(data_path, 'r'))
-    draft_json_old.update(draft_json)
-    json.dump(draft_json_old, open(data_path, 'w'))
+    draft_json_new = json.load(open(data_path, 'r'))
+    draft_json_new.update(draft_json)
+    json.dump(draft_json_new, open(data_path, 'w'))
+    return draft_json_new
 
 
 @app.route("/")
@@ -86,7 +92,7 @@ async def index():
 
 
 @app.route("/new/<string:draft_template>")
-async def new_draft(draft_template):
+async def new_draft(draft_template: str):
     draft_json = {
         'template': draft_template,
         'rounds': 0,
@@ -139,7 +145,7 @@ async def new_draft(draft_template):
 
 
 @app.route("/host/<string:draft_id>")
-async def host_draft(draft_id):
+async def host_draft(draft_id: str):
     draft_json = load_draft_file(draft_id)
     template_params = {
         'type': 'host',
@@ -155,7 +161,7 @@ async def host_draft(draft_id):
 
 
 @app.route("/join/<string:draft_id>")
-async def join_draft(draft_id):
+async def join_draft(draft_id: str):
     draft_json = load_draft_file(draft_id)
     template_params = {
         'type': 'join',
@@ -170,7 +176,7 @@ async def join_draft(draft_id):
     return await render_template("bans.html", **template_params)
 
 @app.route("/watch/<string:draft_id>")
-async def watch_draft(draft_id):
+async def watch_draft(draft_id: str):
     draft_json = load_draft_file(draft_id)
     template_params = {
         'type': 'watch',
@@ -184,7 +190,8 @@ async def watch_draft(draft_id):
     }
     return await render_template("bans.html", **template_params)
 
-def validate_bans(draft_json, bans_json):
+
+def validate_bans(draft_json: dict, bans_json: dict) -> Union[str, None]:
     if 'map_bans' not in bans_json:
         return 'missing map_bans'
     if len(bans_json['map_bans']) != draft_json['map_bans']:
@@ -203,7 +210,7 @@ def validate_bans(draft_json, bans_json):
     return None
 
 @app.websocket('/host/ws/<string:draft_id>')
-async def host_ws(draft_id):
+async def host_ws(draft_id: str):
     draft_json = load_draft_file(draft_id)
     await websocket.send_json(draft_json)
     while not draft_json['host_bans']:
@@ -212,29 +219,80 @@ async def host_ws(draft_id):
         validation_res = validate_bans(draft_json, bans_json)
         if not validation_res:
             draft_json['host_bans'] = bans_json
-            update_draft_file(draft_id, draft_json)
+            draft_json = update_draft_file(draft_id, draft_json)
             await websocket.send_json({'response': 'ok'})
         else:
             await websocket.send_json({'response': validation_res})
 
+        if draft_json['host_bans'] and draft_json['guest_bans']:
+            await broadcast_update(draft_json, draft_id)
+
+    while not draft_json['host_bans'] and draft_json['guest_bans']:
+        msg_json = await websocket.receive_json()
+
+
 @app.websocket('/join/ws/<string:draft_id>')
-async def join_ws(draft_id):
+async def join_ws(draft_id: str):
     draft_json = load_draft_file(draft_id)
     await websocket.send_json(draft_json)
     while not draft_json['guest_bans']:
         bans_json = await websocket.receive_json()
-        print(f'host received:{bans_json}')
+        print(f'join received:{bans_json}')
         validation_res = validate_bans(draft_json, bans_json)
         if not validation_res:
             draft_json['guest_bans'] = bans_json
-            update_draft_file(draft_id, draft_json)
+            draft_json = update_draft_file(draft_id, draft_json)
             await websocket.send_json({'response': 'ok'})
         else:
             await websocket.send_json({'response': validation_res})
 
+        if draft_json['host_bans'] and draft_json['guest_bans']:
+            await broadcast_update(draft_json, draft_id)
+
+    while not draft_json['host_bans'] and draft_json['guest_bans']:
+        msg_json = await websocket.receive_json()
+
+connected_watchers = {}
+
+
+def collect_websocket(func):
+    @wraps(func)
+    async def wrapper(draft_id):
+        global connected_watchers
+        queue = asyncio.Queue()
+
+        if draft_id not in connected_watchers:
+            connected_watchers[draft_id] = set()
+        con_watcher_set = connected_watchers[draft_id]
+        con_watcher_set.add(queue)
+        try:
+            return await func(queue, draft_id)
+        finally:
+            con_watcher_set.remove(queue)
+            if len(con_watcher_set) == 0:
+                connected_watchers.pop(draft_id)
+
+    return wrapper
+
+
 @app.websocket('/watch/ws/<string:draft_id>')
-async def watch_ws(draft_id):
-    pass
+@collect_websocket
+async def watch_ws(queue: asyncio.Queue, draft_id: str):
+    draft_json = load_draft_file(draft_id)
+    await websocket.send_json(draft_json)
+
+    while True:
+        data = await queue.get()
+        await websocket.send_json(data)
+
+
+async def broadcast_update(update_json: dict, draft_id: str):
+    print("broadcasting")
+    con_watch_queues = connected_watchers.get(draft_id)
+    if con_watch_queues:
+        for queue in con_watch_queues:
+            await queue.put(update_json)
+
 
 
 if __name__ == "__main__":
