@@ -44,6 +44,10 @@ function init(view_type, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
 
     if(view_type=='watch'){
         // only spectating
+        let buttons = document.getElementsByClassName('ready_btn');
+        for(let btn of buttons){
+            btn.hidden=true;
+        }
     }else{
         // interactive
         for(let icon of map_icons_list){
@@ -55,14 +59,38 @@ function init(view_type, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
 
         if(view_type=='host'){
             my_bans_div = host_bans_div;
+            let ready_btn = guest_bans_div.getElementsByClassName('ready_btn')[0];
+            ready_btn.hidden=true;
         }else
         if(view_type=='join'){
             my_bans_div = guest_bans_div;
+            let ready_btn = host_bans_div.getElementsByClassName('ready_btn')[0];
+            ready_btn.hidden=true;
         }else{
             throw 'view type is not recognized: '+str(view_type);
         }
+
+        let ready_btn = my_bans_div.getElementsByClassName('ready_btn')[0];
+        ready_btn.onclick = submit_bans;
+
     }
 
+}
+
+function submit_bans(){
+    if(map_bans_count!=map_bans_max){
+        return;
+    }
+    if(civ_bans_count!=civ_bans_max){
+        return;
+    }
+
+    let bans_submission = {
+    'map_bans': banned_map_list,
+    'civ_bans': banned_civ_list,
+    };
+
+    console.log(bans_submission);
 
 }
 

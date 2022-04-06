@@ -21,12 +21,12 @@ h1, h2 {
 }
 
 #guestBans {
-  float: left;
+  float: right;
   width: 45%;
 }
 
 #hostBans {
-  float: right;
+  float: left;
   width: 45%;
 }
 

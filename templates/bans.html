@@ -20,13 +20,13 @@
 </div>
 
 <div id="mapList">
-    <p>Maps (click to ban):</p>
+    <p>Maps (click to add/remove ban):</p>
     {% for map_key, map_src in maps_list.items() %}
     <img class="map_icon" id='{{map_key}}' src='{{url_for("static", filename=map_src)}}'>
     {% endfor %}
 </div>
 <div id="civList">
-    <p>Civs (click to ban):</p>
+    <p>Civs (click to add/remove ban):</p>
     {% for civ_key, civ_src in civs_list.items() %}
     <img class="civ_icon" id='{{civ_key}}' src='{{url_for("static", filename=civ_src)}}'>
     {% endfor %}
@@ -44,7 +44,7 @@
             <img class="civ_icon" id="host_civ_ban_{{i}}" src="{{url_for('static', filename='icon_placeholder.png')}}">
             {% endfor %}
         </div>
-        <button>Bans Ready</button>
+        <button class="ready_btn">Bans Ready</button>
     </div>
     <div id="guestBans">
         <h2>Guest bans</h2>
@@ -58,7 +58,7 @@
             <img class="civ_icon" id="guest_civ_ban_{{i}}" src="{{url_for('static', filename='icon_placeholder.png')}}">
             {% endfor %}
         </div>
-        <button>Bans Ready</button>
+        <button class="ready_btn">Bans Ready</button>
     </div>
 </div>
 <div>
@@ -75,16 +75,15 @@
             <img class="civ_icon" src="{{url_for('static', filename='icon_placeholder.png')}}">
         </div>
         <div>
-            <button>Ready</button>
-            <button>Next round</button>
+            <button class="ready_btn">Ready</button>
+            <button class="ready_btn">Next round</button>
         </div>
     </div>
     {% endfor %}
 </div>
 
 <div id="messageBoard">
-    <p id="messageText">Waiting for opponent to join.</p>
-    <p id="mapBansText"></p>
+    <p id="messageText"></p> <p id="mapBansText"></p>
     <p id="civBansText"></p>
     <p id="instaBansText"></p>
 
