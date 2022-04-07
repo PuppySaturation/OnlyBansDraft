@@ -33,9 +33,9 @@ h1, h2 {
 .round_selection {
   clear:left;
   text-align: center;
-  display: inline-block;
-  margin-left: 15pt;
-  margin-right: 15pt;
+  display: block;
+  margin-bottom: 5pt;
+  margin-top: 5pt;
 }
 
 .host_civ_selection {
@@ -52,4 +52,8 @@ h1, h2 {
 
 #messageBoard {
   display: inline-block;
+}
+
+button {
+margin: 5pt;
 }

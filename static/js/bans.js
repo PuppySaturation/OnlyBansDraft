@@ -13,7 +13,10 @@ let ws_connection = undefined;
 let ws_updates = undefined;
 let img_placeholder_src = undefined;
 
+let view_type_param;
+
 function init(view_type, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
+    view_type_param = view_type;
     map_bans_max = n_map_bans;
     civ_bans_max = n_civ_bans;
     insta_bans_max = n_insta_bans;
@@ -44,12 +47,12 @@ function init(view_type, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
         obj.style.display='none';
     }
 
+    let buttons = document.getElementsByClassName('ready_btn');
+    for(let btn of buttons){
+        btn.hidden=true;
+    }
     if(view_type=='watch'){
         // only spectating
-        let buttons = document.getElementsByClassName('ready_btn');
-        for(let btn of buttons){
-            btn.hidden=true;
-        }
     }else{
         // interactive
         for(let icon of map_icons_list){
@@ -61,19 +64,16 @@ function init(view_type, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
 
         if(view_type=='host'){
             my_bans_div = host_bans_div;
-            let ready_btn = guest_bans_div.getElementsByClassName('ready_btn')[0];
-            ready_btn.hidden=true;
         }else
         if(view_type=='join'){
             my_bans_div = guest_bans_div;
-            let ready_btn = host_bans_div.getElementsByClassName('ready_btn')[0];
-            ready_btn.hidden=true;
         }else{
             throw 'view type is not recognized: '+str(view_type);
         }
 
         let ready_btn = my_bans_div.getElementsByClassName('ready_btn')[0];
         ready_btn.onclick = submit_bans;
+        ready_btn.hidden=false;
 
     }
 
@@ -213,6 +213,12 @@ function process_server_action(action_json){
         case 'start_round':
             server_update_round(action_json);
             break;
+        case 'ready_round':
+            server_ready_round(action_json);
+            break;
+        case 'finish_round':
+            server_finish_round(action_json);
+            break;
         case 'update_instaban':
             break;
     }
@@ -257,13 +263,40 @@ function server_update_bans(bans_json){
     let guest_bans_civ_icons = guest_bans_div.getElementsByClassName('civ_icon');
     f(guest_bans_civ_icons, guest_bans.civ_bans)
 
+    let bans_ready_btn = my_bans_div.getElementsByClassName('ready_btn')[0];
+    bans_ready_btn.onclick = undefined;
+    bans_ready_btn.hidden=true;
+
     update_bans_text();
+    enable_start_round(0);
+
+    let round_div = document.getElementById('no_round');
+    round_div.removeAttribute('style');
+
 }
+
+function enable_start_round(r){
+    if(view_type_param=='watch'){
+        return;
+    }
+
+    let btn = document.getElementById('start_r'+r+'_btn');
+    btn.hidden=false;
+    btn.onclick = ()=>{
+        let action_json = {'action':'next_round'};
+        ws_connection.send(JSON.stringify(action_json));
+    }
+}
+
 function server_update_round(action_json){
     let map_id = action_json.map;
     let host_civ_id = action_json.host_civ;
     let guest_civ_id = action_json.guest_civ;
     let r = action_json.round_numb;
+
+    let btn = document.getElementById('start_r'+r+'_btn');
+    btn.hidden=false;
+    btn.onclick = undefined;
 
     let src_map_icon = document.getElementById(map_id);
     let src_host_civ_icon = document.getElementById(host_civ_id);
@@ -289,6 +322,29 @@ function server_update_round(action_json){
     map_icon_div.src = src_map_icon.src;
     map_icon_div.classList.add('map_icon');
     map_div.appendChild(map_icon_div);
+}
+
+function server_ready_round(action_json){
+    let ready_target = action_json.target;
+
+    let r = action_json.round_numb;
+    let btn = document.getElementById('ready_r'+r+'_btn');
+
+    if(ready_target!=view_type_param){
+        btn.hidden=true;
+    }else{
+        btn.hidden=false;
+        btn.onclick = ()=>{
+            let action_json = {'action':'ready_round'};
+            ws_connection.send(JSON.stringify(action_json));
+        }
+    }
+
+}
+
+function server_finish_round(action_json){
+    let r = action_json.round_numb;
+    enable_start_round(r+1);
 }
 
 function update_bans_text(){
