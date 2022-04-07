@@ -65,14 +65,12 @@
     {% for r in range(rounds) %}
     <div id="round_{{r}}" class="round_selection">
         <h2>Round {{r+1}}</h2>
+        <p id="message_r{{r}}">click civ to instaban</p>
         <div id="host_civ_r{{r}}" class="host_civ_selection">
-            <img class="civ_icon" src="{{url_for('static', filename='icon_placeholder.png')}}">
         </div>
         <div id="map_r{{r}}" class="map_selection">
-            <img class="map_icon" src="{{url_for('static', filename='icon_placeholder.png')}}">
         </div>
         <div id="guest_civ_r{{r}}" class="guest_civ_selection">
-            <img class="civ_icon" src="{{url_for('static', filename='icon_placeholder.png')}}">
         </div>
         <div>
             <button class="ready_btn">Ready</button>

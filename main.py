@@ -101,7 +101,8 @@ async def new_draft(draft_template: str):
         'map_bans': 0,
         'civ_bans': 0,
         'insta_bans': 0,
-        'draft_stage': 'bans', # bans, waiting_round_N, round_N,
+        'draft_stage': 'bans', # bans, waiting_round, round,
+        'round_numb' : -1,
         'actions': [],
     }
     if draft_template == 'bo3':
@@ -248,6 +249,7 @@ async def host_ws(draft_id: str):
                 # has the guest submitted his bans?
                 if draft_id in connected_guests and connected_guests[draft_id]:
                     draft_json = await broadcast_bans_update(draft_json)
+                    draft_json = await broadcast_round_start(draft_json)
 
             elif recv_json['action'] == 'next_round':
                 pass
@@ -294,17 +296,19 @@ async def broadcast_round_start(draft_json):
     connected_hosts[draft_id] = None
     connected_guests[draft_id] = None
 
+    draft_json['round_numb'] += 1
     map_id = draft_json['available_maps'].pop()
     host_civ_id = draft_json['available_civs'].pop()
     guest_civ_id = draft_json['available_civs'].pop()
 
     action_json = {'action': 'start_round',
-                   'round_numb': 0,
+                   'round_numb': draft_json['round_numb'],
                    'map': map_id,
                    'host_civ': host_civ_id,
                    'guest_civ': guest_civ_id,
                    }
     draft_json['actions'].append(action_json)
+    draft_json = update_draft_file(draft_id, draft_json)
 
     await broadcast_update(action_json, draft_json['draft_id'])
     return draft_json
@@ -343,6 +347,7 @@ async def join_ws(draft_id: str):
                 # has the guest submitted his bans?
                 if draft_id in connected_hosts and connected_hosts[draft_id]:
                     draft_json = await broadcast_bans_update(draft_json)
+                    draft_json = await broadcast_round_start(draft_json)
 
             elif recv_json['action'] == 'next_round':
                 pass

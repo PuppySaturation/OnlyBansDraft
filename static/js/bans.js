@@ -101,7 +101,7 @@ function init(view_type, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
     ws_updates.onmessage = (event)=>{
         let draft_json = JSON.parse(event.data);
         console.log(draft_json);
-        if(draft_id in draft_json){
+        if(draft_json.draft_id != undefined){
             for(let action_json of draft_json.actions){
                 process_server_action(action_json);
             }
@@ -211,6 +211,7 @@ function process_server_action(action_json){
             server_update_bans(action_json);
             break;
         case 'start_round':
+            server_update_round(action_json);
             break;
         case 'update_instaban':
             break;
@@ -257,6 +258,37 @@ function server_update_bans(bans_json){
     f(guest_bans_civ_icons, guest_bans.civ_bans)
 
     update_bans_text();
+}
+function server_update_round(action_json){
+    let map_id = action_json.map;
+    let host_civ_id = action_json.host_civ;
+    let guest_civ_id = action_json.guest_civ;
+    let r = action_json.round_numb;
+
+    let src_map_icon = document.getElementById(map_id);
+    let src_host_civ_icon = document.getElementById(host_civ_id);
+    let src_guest_civ_icon = document.getElementById(guest_civ_id);
+
+    let round_div = document.getElementById('round_'+r);
+    round_div.removeAttribute('style');
+
+    let host_civ_div = document.getElementById('host_civ_r'+r);
+    let host_civ_icon_div = document.createElement('img');
+    host_civ_icon_div.src = src_host_civ_icon.src;
+    host_civ_icon_div.classList.add('civ_icon');
+    host_civ_div.appendChild(host_civ_icon_div);
+
+    let guest_civ_div = document.getElementById('guest_civ_r'+r);
+    let guest_civ_icon_div = document.createElement('img');
+    guest_civ_icon_div.src = src_guest_civ_icon.src;
+    guest_civ_icon_div.classList.add('civ_icon');
+    guest_civ_div.appendChild(guest_civ_icon_div);
+
+    let map_div = document.getElementById('map_r'+r);
+    let map_icon_div = document.createElement('img');
+    map_icon_div.src = src_map_icon.src;
+    map_icon_div.classList.add('map_icon');
+    map_div.appendChild(map_icon_div);
 }
 
 function update_bans_text(){
