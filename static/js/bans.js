@@ -263,9 +263,11 @@ function server_update_bans(bans_json){
     let guest_bans_civ_icons = guest_bans_div.getElementsByClassName('civ_icon');
     f(guest_bans_civ_icons, guest_bans.civ_bans)
 
-    let bans_ready_btn = my_bans_div.getElementsByClassName('ready_btn')[0];
-    bans_ready_btn.onclick = undefined;
-    bans_ready_btn.hidden=true;
+    if(my_bans_div){
+        let bans_ready_btn = my_bans_div.getElementsByClassName('ready_btn')[0];
+        bans_ready_btn.onclick = undefined;
+        bans_ready_btn.hidden=true;
+    }
 
     update_bans_text();
     enable_start_round(0);
@@ -297,7 +299,7 @@ function server_update_round(action_json){
     let r = action_json.round_numb;
 
     let btn = document.getElementById('start_r'+r+'_btn');
-    btn.hidden=false;
+    btn.hidden=true;
     btn.onclick = undefined;
 
     let src_map_icon = document.getElementById(map_id);
