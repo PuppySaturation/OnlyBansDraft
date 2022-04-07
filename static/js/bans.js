@@ -281,10 +281,12 @@ function enable_start_round(r){
     }
 
     let btn = document.getElementById('start_r'+r+'_btn');
-    btn.hidden=false;
-    btn.onclick = ()=>{
-        let action_json = {'action':'next_round'};
-        ws_connection.send(JSON.stringify(action_json));
+    if(btn != undefined){
+        btn.hidden=false;
+        btn.onclick = ()=>{
+            let action_json = {'action':'next_round'};
+            ws_connection.send(JSON.stringify(action_json));
+        }
     }
 }
 
@@ -328,13 +330,17 @@ function server_ready_round(action_json){
     let ready_target = action_json.target;
 
     let r = action_json.round_numb;
-    let btn = document.getElementById('ready_r'+r+'_btn');
+    let start_btn = document.getElementById('start_r'+r+'_btn');
+    start_btn.hidden=true;
+    start_btn.onclick=undefined;
+
+    let ready_btn = document.getElementById('ready_r'+r+'_btn');
 
     if(ready_target!=view_type_param){
-        btn.hidden=true;
+        ready_btn.hidden=true;
     }else{
-        btn.hidden=false;
-        btn.onclick = ()=>{
+        ready_btn.hidden=false;
+        ready_btn.onclick = ()=>{
             let action_json = {'action':'ready_round'};
             ws_connection.send(JSON.stringify(action_json));
         }
@@ -344,6 +350,9 @@ function server_ready_round(action_json){
 
 function server_finish_round(action_json){
     let r = action_json.round_numb;
+    let ready_btn = document.getElementById('ready_r'+r+'_btn');
+    ready_btn.hidden=true;
+    ready_btn.onclick=undefined;
     enable_start_round(r+1);
 }
 
