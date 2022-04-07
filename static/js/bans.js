@@ -220,6 +220,7 @@ function process_server_action(action_json){
             server_finish_round(action_json);
             break;
         case 'update_instaban':
+            server_update_instaban(action_json);
             break;
     }
 }
@@ -315,11 +316,27 @@ function server_update_round(action_json){
     host_civ_icon_div.classList.add('civ_icon');
     host_civ_div.appendChild(host_civ_icon_div);
 
+    host_civ_icon_div.onclick = ()=>{
+        let action_json={
+            'action':'insta_ban',
+            'target':'host_civ',
+        }
+        ws_connection.send(JSON.stringify(action_json));
+    }
+
     let guest_civ_div = document.getElementById('guest_civ_r'+r);
     let guest_civ_icon_div = document.createElement('img');
     guest_civ_icon_div.src = src_guest_civ_icon.src;
     guest_civ_icon_div.classList.add('civ_icon');
     guest_civ_div.appendChild(guest_civ_icon_div);
+
+   guest_civ_icon_div.onclick = ()=>{
+        let action_json={
+            'action':'insta_ban',
+            'target':'guest_civ',
+        }
+        ws_connection.send(JSON.stringify(action_json));
+    }
 
     let map_div = document.getElementById('map_r'+r);
     let map_icon_div = document.createElement('img');
@@ -348,6 +365,34 @@ function server_ready_round(action_json){
         }
     }
 
+}
+
+function server_update_instaban(action_json){
+    let target = action_json.target; // guest_civ or host_civ
+    let new_civ_id = action_json.new_civ; // civ_id
+    let user = action_json.user; // guest or host
+    let r = action_json.round_numb; //
+    let civ_icons_div;
+    if(target=='guest_civ'){
+        civ_icons_div = document.getElementById('guest_civ_r'+r);
+    }else
+    if(target=='host_civ'){
+        civ_icons_div = document.getElementById('host_civ_r'+r);
+    }
+    let prev_civ_img = civ_icons_div.lastChild;
+    prev_civ_img.classList.add('banned');
+    let new_civ_img = document.createElement('img');
+    new_civ_img.classList.add('civ_icon');
+    new_civ_img.src = document.getElementById(new_civ_id).src;
+    civ_icons_div.appendChild(new_civ_img);
+    prev_civ_img.onclick = undefined;
+    new_civ_img.onclick = ()=>{
+        let action_json={
+            'action':'insta_ban',
+            'target':target,
+        }
+        ws_connection.send(JSON.stringify(action_json));
+    };
 }
 
 function server_finish_round(action_json){

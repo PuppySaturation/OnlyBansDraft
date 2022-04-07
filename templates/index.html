@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>OnlyBans</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/index.css') }}">
     <script>
 function goJoin(){
     join_id_input = document.getElementById('join_id_input');
@@ -17,7 +18,7 @@ function goWatch(){
     </script>
 </head>
 <body>
-<h1>OnlyBans</h1>
+<img class='banner' src="{{url_for('static', filename='onlybans2.png')}}"
 </body>
 <div>
 <p>Host the bans:</p>
