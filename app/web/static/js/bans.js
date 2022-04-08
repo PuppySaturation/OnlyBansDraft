@@ -89,7 +89,7 @@ function init(view_type, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
     if(view_type=='host' || view_type=='join'){
         let ws_address = ws_protocol+document.domain+':'+location.port+'/';
         ws_address += view_type+'/ws/'+draft_id;
-        ws_connection = new WebSocket(ws_address);
+        ws_connection = new ReconnectingWebSocket(ws_address);
         ws_connection.onmessage = (event)=>{
             action_json = JSON.parse(event.data);
             console.log(action_json);
@@ -97,7 +97,7 @@ function init(view_type, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
         }
     }
 
-    ws_updates = new WebSocket(ws_update_address);
+    ws_updates = new ReconnectingWebSocket(ws_update_address);
     ws_updates.onmessage = (event)=>{
         let draft_json = JSON.parse(event.data);
         console.log(draft_json);
