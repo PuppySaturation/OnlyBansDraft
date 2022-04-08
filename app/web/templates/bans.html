@@ -12,7 +12,7 @@
     </script>
 </head>
 <body>
-<h1>OnlyBans</h1>
+<img class='banner' src="{{url_for('static', filename='onlybans2.png')}}"
 <div>
     {% if type == 'host' %}
     <p>Share this code to join or watch the draft: <b>{{draft_id}}</b></p>
@@ -62,10 +62,13 @@
     </div>
 </div>
 <div>
+    <div id="no_round" class="round_selection">
+        <button id="start_r0_btn" class="ready_btn">Start Round 1</button>
+    </div>
     {% for r in range(rounds) %}
     <div id="round_{{r}}" class="round_selection">
-        <h2>Round {{r+1}}</h2>
-        <p id="message_r{{r}}">click civ to instaban</p>
+        <h2>(Host) Round {{r+1}} (Guest)</h2>
+        <p id="message_r{{r}}">click civ to insta-ban</p>
         <div id="host_civ_r{{r}}" class="host_civ_selection">
         </div>
         <div id="map_r{{r}}" class="map_selection">
@@ -73,9 +76,13 @@
         <div id="guest_civ_r{{r}}" class="guest_civ_selection">
         </div>
         <div>
-            <button class="ready_btn">Ready</button>
-            <button class="ready_btn">Next round</button>
+            <button id="ready_r{{r}}_btn" class="ready_btn">No insta-ban</button>
         </div>
+        {% if r+1 < rounds %}
+        <div>
+            <button id="start_r{{r+1}}_btn" class="ready_btn">Start round {{r+2}}</button>
+        </div>
+        {% endif %}
     </div>
     {% endfor %}
 </div>

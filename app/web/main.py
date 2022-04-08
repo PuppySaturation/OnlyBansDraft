@@ -77,13 +77,15 @@ def load_draft_file(draft_id: str) -> dict:
 
 def update_draft_file(draft_id: str, draft_json: dict) -> dict:
     data_path = os.path.join(app.root_path, 'data/', f'bans_{draft_id}.json')
-    draft_json = {k:v for k, v in draft_json.items() if v}
+    #draft_json = {k:v for k, v in draft_json.items() if v}
 
     #with filelock.SoftFileLock(data_path):
-    draft_json_new = json.load(open(data_path, 'r'))
-    draft_json_new.update(draft_json)
-    json.dump(draft_json_new, open(data_path, 'w'))
-    return draft_json_new
+    #draft_json_new = json.load(open(data_path, 'r'))
+    #draft_json_new.update(draft_json)
+    #json.dump(draft_json_new, open(data_path, 'w'))
+    #return draft_json_new
+    json.dump(draft_json, open(data_path, 'w'))
+    return draft_json
 
 
 @app.route("/")
@@ -103,6 +105,10 @@ async def new_draft(draft_template: str):
         'draft_stage': 'bans', # bans, waiting_round, round,
         'round_numb' : -1,
         'actions': [],
+        'available_maps': [],
+        'available_civs': [],
+        'host_insta_bans': 0,
+        'guest_insta_bans' : 0,
     }
     if draft_template == 'bo3':
         draft_json.update({
@@ -211,10 +217,6 @@ def validate_bans(draft_json: dict, bans_json: dict) -> Union[str, None]:
     return None
 
 
-connected_hosts = {}
-connected_guests = {}
-
-
 @app.websocket('/host/ws/<string:draft_id>')
 async def host_ws(draft_id: str):
     global connected_hosts, connected_guests
@@ -223,10 +225,10 @@ async def host_ws(draft_id: str):
         return
 
     connected_hosts[draft_id] = None
-    draft_json = load_draft_file(draft_id)
     try:
         while True:
             recv_json = await websocket.receive_json()
+            draft_json = load_draft_file(draft_id)
             if 'action' not in recv_json:
                 await websocket.send_json({'response': 'invalid json package'})
                 continue
@@ -234,9 +236,11 @@ async def host_ws(draft_id: str):
                 # is it the right stage?
                 if draft_json['draft_stage'] != 'bans':
                     await websocket.send_json({'response': 'bans cannot be submitted at this stage'})
+                    continue
                 # have you submitted bans before?
                 if connected_hosts[draft_id]:
                     await websocket.send_json({'response': 'bans submitted, waiting for guest'})
+                    continue
                 # are the bans valid?
                 valid_resp = validate_bans(draft_json, recv_json)
                 if valid_resp is not None:
@@ -248,16 +252,102 @@ async def host_ws(draft_id: str):
                 # has the guest submitted his bans?
                 if draft_id in connected_guests and connected_guests[draft_id]:
                     draft_json = await broadcast_bans_update(draft_json)
-                    draft_json = await broadcast_round_start(draft_json)
 
             elif recv_json['action'] == 'next_round':
-                pass
+                # is it the right stage?
+                if draft_json['draft_stage'] != 'waiting_round':
+                    await websocket.send_json({'response': 'next round cannot be started at this stage'})
+                    continue
+                draft_json = await broadcast_round_start(draft_json)
+
             elif recv_json['action'] == 'insta_ban':
-                pass
-            elif recv_json['action'] == 'insta_ban':
-                pass
+                # is it the right stage?
+                if draft_json['draft_stage'] != 'host_round':
+                    await websocket.send_json({'response': 'host cannot insta ban at this stage'})
+                    continue
+                # do we still have insta bans?
+                if draft_json['host_insta_bans'] >= draft_json['insta_bans']:
+                    await websocket.send_json({'response': 'no insta bans remaining'})
+                    continue
+                await broadcast_instaban(draft_id, 'host', recv_json['target'])
+
+            elif recv_json['action'] == 'ready_round':
+                # is it the right stage?
+                if draft_json['draft_stage'] != 'host_round':
+                    await websocket.send_json({'response': 'host cannot continue round at this stage'})
+                    continue
+                await broadcast_round_progress(draft_json)
     finally:
         connected_hosts.pop(draft_id)
+
+
+@app.websocket('/join/ws/<string:draft_id>')
+async def join_ws(draft_id: str):
+    global connected_guests
+    if draft_id in connected_guests:
+        await websocket.send_json({'response': 'guest already connected'})
+        return
+
+    connected_guests[draft_id]=None
+    try:
+        while True:
+            recv_json = await websocket.receive_json()
+            draft_json = load_draft_file(draft_id)
+            if 'action' not in recv_json:
+                await websocket.send_json({'response': 'invalid json package'})
+                continue
+            if recv_json['action'] == 'submit_bans':
+                # is it the right stage?
+                if draft_json['draft_stage'] != 'bans':
+                    await websocket.send_json({'response': 'bans cannot be submitted at this stage'})
+                    continue
+                # have you submitted bans before?
+                if connected_guests[draft_id]:
+                    await websocket.send_json({'response': 'bans submitted, waiting for host'})
+                    continue
+                # are the bans valid?
+                valid_resp = validate_bans(draft_json, recv_json)
+                if valid_resp is not None:
+                    await websocket.send_json({'response': valid_resp})
+                    continue
+                connected_guests[draft_id] = recv_json
+                await websocket.send_json({'response': 'ok'})
+
+                # has the guest submitted his bans?
+                if draft_id in connected_hosts and connected_hosts[draft_id]:
+                    draft_json = await broadcast_bans_update(draft_json)
+
+            elif recv_json['action'] == 'next_round':
+                # is it the right stage?
+                if draft_json['draft_stage'] != 'waiting_round':
+                    await websocket.send_json({'response': 'next round cannot be started at this stage'})
+                    continue
+                draft_json = await broadcast_round_start(draft_json)
+
+            elif recv_json['action'] == 'insta_ban':
+                # is it the right stage?
+                if draft_json['draft_stage'] != 'guest_round':
+                    await websocket.send_json({'response': 'guest cannot insta ban at this stage'})
+                    continue
+                # do we still have insta bans?
+                if draft_json['guest_insta_bans'] >= draft_json['insta_bans']:
+                    await websocket.send_json({'response': 'no insta bans remaining'})
+                    continue
+                await broadcast_instaban(draft_id, 'guest', recv_json['target'])
+
+            elif recv_json['action'] == 'ready_round':
+                # is it the right stage?
+                if draft_json['draft_stage'] != 'guest_round':
+                    await websocket.send_json({'response': 'guest cannot continue round at this stage'})
+                    continue
+                await broadcast_round_progress(draft_json)
+
+    finally:
+        connected_guests.pop(draft_id)
+
+
+connected_hosts = {}
+connected_guests = {}
 
 
 async def broadcast_bans_update(draft_json):
@@ -283,11 +373,12 @@ async def broadcast_bans_update(draft_json):
                    'guest_bans': guest_bans,
                    }
     draft_json['actions'].append(action_json)
-    draft_json['draft_stage'] = 'waiting_round_1'
+    draft_json['draft_stage'] = 'waiting_round'
     draft_json = update_draft_file(draft_id, draft_json)
 
     await broadcast_update(action_json, draft_json['draft_id'])
     return draft_json
+
 
 async def broadcast_round_start(draft_json):
     global connected_hosts, connected_guests
@@ -307,56 +398,81 @@ async def broadcast_round_start(draft_json):
                    'guest_civ': guest_civ_id,
                    }
     draft_json['actions'].append(action_json)
+    if draft_json['round_numb']%2 == 0:
+        draft_json['draft_stage'] = 'host_round'
+    else:
+        draft_json['draft_stage'] = 'guest_round'
     draft_json = update_draft_file(draft_id, draft_json)
 
+    await broadcast_update(action_json, draft_json['draft_id'])
+
+    action_json = {
+        'action': 'ready_round',
+        'round_numb': draft_json['round_numb'],
+    }
+
+    if draft_json['draft_stage'] == 'host_round':
+        action_json['target'] = 'host'
+    else:
+        action_json['target'] = 'join'
     await broadcast_update(action_json, draft_json['draft_id'])
     return draft_json
 
 
-@app.websocket('/join/ws/<string:draft_id>')
-async def join_ws(draft_id: str):
-    global connected_guests
-    if draft_id in connected_guests:
-        await websocket.send_json({'response': 'guest already connected'})
-        return
+async def broadcast_round_progress(draft_json):
+    draft_id = draft_json['draft_id']
+    r = draft_json['round_numb']
+    action_json = {}
+    if r%2 == 0: # host first, guest second
+        if draft_json['draft_stage'] == 'host_round':
+            next_stage = 'guest_round'
+            action_json = {
+                'action': 'ready_round',
+                'target': 'join',
+            }
 
-    connected_guests[draft_id]=None
+        elif draft_json['draft_stage'] == 'guest_round':
+            next_stage = 'waiting_round'
+            action_json = {'action': 'finish_round'}
+
+    else: # guest first, host second
+        if draft_json['draft_stage'] == 'guest_round':
+            next_stage = 'host_round'
+            action_json = {
+                'action': 'ready_round',
+                'target': 'host',
+            }
+        elif draft_json['draft_stage'] == 'host_round':
+            next_stage = 'waiting_round'
+            action_json = {'action': 'finish_round'}
+
+    action_json['round_numb'] = r
+    draft_json['draft_stage'] = next_stage
+    draft_json = update_draft_file(draft_id, draft_json)
+
+    await broadcast_update(action_json, draft_id)
+    return draft_json
+
+async def broadcast_instaban(draft_id, user, target):
     draft_json = load_draft_file(draft_id)
-    try:
-        while True:
-            recv_json = await websocket.receive_json()
-            if 'action' not in recv_json:
-                await websocket.send_json({'response': 'invalid json package'})
-                continue
-            if recv_json['action'] == 'submit_bans':
-                # is it the right stage?
-                if draft_json['draft_stage'] != 'bans':
-                    await websocket.send_json({'response': 'bans cannot be submitted at this stage'})
-                # have you submitted bans before?
-                if connected_guests[draft_id]:
-                    await websocket.send_json({'response': 'bans submitted, waiting for host'})
-                # are the bans valid?
-                valid_resp = validate_bans(draft_json, recv_json)
-                if valid_resp is not None:
-                    await websocket.send_json({'response': valid_resp})
-                    continue
-                connected_guests[draft_id] = recv_json
-                await websocket.send_json({'response': 'ok'})
+    if user == 'host':
+        draft_json['host_insta_bans'] += 1
+    elif user == 'guest':
+        draft_json['guest_insta_bans'] += 1
 
-                # has the guest submitted his bans?
-                if draft_id in connected_hosts and connected_hosts[draft_id]:
-                    draft_json = await broadcast_bans_update(draft_json)
-                    draft_json = await broadcast_round_start(draft_json)
+    new_civ = draft_json['available_civs'].pop()
 
-            elif recv_json['action'] == 'next_round':
-                pass
-            elif recv_json['action'] == 'insta_ban':
-                pass
-            elif recv_json['action'] == 'insta_ban':
-                pass
-
-    finally:
-        connected_guests.pop(draft_id)
+    action_json = {
+        'action': 'update_instaban',
+        'target': target,
+        'new_civ': new_civ,
+        'user': user,
+        'round_numb': draft_json['round_numb'],
+    }
+    draft_json['actions'].append(action_json)
+    draft_json = update_draft_file(draft_id, draft_json)
+    await broadcast_update(action_json, draft_id)
+    return draft_json
 
 
 connected_watchers = {}

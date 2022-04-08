@@ -13,7 +13,7 @@ echo "Mounting completed."
 # For environments with multiple CPU cores, increase the number of workers
 # to be equal to the cores available.
 # Timeout is set to 0 to disable the timeouts of the workers to allow Cloud Run to handle instance scaling.
-exec gunicorn -k uvicorn.workers.UvicornWorker -w 4 -b 0.0.0.0:$PORT  app.web.main:app
+exec gunicorn -k uvicorn.workers.UvicornH11Worker -w 2 -t 0 -b 0.0.0.0:$PORT  app.web.main:app
 
 # Exit immediately when one of the background processes terminate.
 wait -n
