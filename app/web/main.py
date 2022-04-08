@@ -372,9 +372,6 @@ async def broadcast_bans_update(draft_json):
                                     if k not in host_bans['civ_bans']
                                     and k not in guest_bans['civ_bans']]
 
-    random.shuffle(draft_json['available_maps'])
-    random.shuffle(draft_json['available_civs'])
-
     action_json = {'action': 'update_bans',
                    'host_bans': host_bans,
                    'guest_bans': guest_bans,
@@ -394,9 +391,12 @@ async def broadcast_round_start(draft_json):
     connected_guests[draft_id] = None
 
     draft_json['round_numb'] += 1
-    map_id = draft_json['available_maps'].pop()
-    host_civ_id = draft_json['available_civs'].pop()
-    guest_civ_id = draft_json['available_civs'].pop()
+    i = random.randint(0, len(draft_json['available_maps']))
+    map_id = draft_json['available_maps'].pop(i)
+    i = random.randint(0, len(draft_json['available_civs']))
+    host_civ_id = draft_json['available_civs'].pop(i)
+    i = random.randint(0, len(draft_json['available_civs']))
+    guest_civ_id = draft_json['available_civs'].pop(i)
 
     action_json = {'action': 'start_round',
                    'round_numb': draft_json['round_numb'],
@@ -472,7 +472,8 @@ async def broadcast_instaban(draft_id, user, target):
     elif user == 'guest':
         draft_json['guest_insta_bans'] += 1
 
-    new_civ = draft_json['available_civs'].pop()
+    i = random.randint(0, len(draft_json['available_civs']))
+    new_civ = draft_json['available_civs'].pop(i)
 
     action_json = {
         'action': 'update_instaban',
