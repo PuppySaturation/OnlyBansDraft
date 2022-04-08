@@ -15,18 +15,18 @@ RUN set -e; \
     apt-get install -y gcsfuse \
     && apt-get clean \
 	pip install --upgrade pip && \
-	pip install Quart uvicorn typing gevent && \
+	pip install Quart gunicorn uvicorn typing gevent && \
 	mkdir -p ${APP_DIR}/web && \
 	rm -rf /var/cache/apk/*
 
-# Set fallback mount directory
-ENV MNT_DIR /mnt/gcs
+
 
 # Copy local code to the container image.
 ENV APP_DIR /app
 WORKDIR $APP_DIR
 COPY . ./
-
+# Set fallback mount directory
+ENV MNT_DIR $APP_DIR/app/web/data
 # copy config files
 COPY ./app ${APP_DIR}
 

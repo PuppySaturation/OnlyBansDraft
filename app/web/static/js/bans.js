@@ -77,19 +77,37 @@ function init(view_type, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
 
     }
 
-    let ws_update_address = 'ws://'+document.domain+':'+location.port+'/watch/ws/'+draft_id;
+    let ws_protocol = undefined;
+    if(location.protocol == 'https:'){
+        ws_protocol = 'wss://';
+    }else
+    if(location.protocol == 'http:'){
+        ws_protocol = 'ws://';
+    }
+
+    let ws_update_address = ws_protocol+document.domain+':'+location.port+'/watch/ws/'+draft_id;
     if(view_type=='host' || view_type=='join'){
-        let ws_address = 'ws://'+document.domain+':'+location.port+'/';
+        let ws_address = ws_protocol+document.domain+':'+location.port+'/';
         ws_address += view_type+'/ws/'+draft_id;
         ws_connection = new WebSocket(ws_address);
         ws_connection.onmessage = (event)=>{
-            console.log('CONNECTION',event.data);
+            action_json = JSON.parse(event.data);
+            console.log(action_json);
+            process_server_action(action_json);
         }
     }
 
     ws_updates = new WebSocket(ws_update_address);
     ws_updates.onmessage = (event)=>{
-        console.log('UPDATE',event.data);
+        let draft_json = JSON.parse(event.data);
+        console.log(draft_json);
+        if(draft_json.draft_id != undefined){
+            for(let action_json of draft_json.actions){
+                process_server_action(action_json);
+            }
+        }else{
+            process_server_action(draft_json);
+        }
     }
 }
 
@@ -102,6 +120,7 @@ function submit_bans(){
     }
 
     let bans_submission = {
+    'action' : 'submit_bans',
     'map_bans': banned_map_list,
     'civ_bans': banned_civ_list,
     };
@@ -185,6 +204,93 @@ function update_civ_ban_icons(ind){
     }
     civ_icon_divs[ind].src=img_src;
 }
+
+function process_server_action(action_json){
+    switch(action_json['action']){
+        case 'update_bans':
+            server_update_bans(action_json);
+            break;
+        case 'start_round':
+            server_update_round(action_json);
+            break;
+        case 'update_instaban':
+            break;
+    }
+}
+
+function server_update_bans(bans_json){
+    let guest_bans = bans_json.guest_bans;
+    let host_bans = bans_json.host_bans;
+
+    map_bans_count = map_bans_max;
+    civ_bans_count = civ_bans_max;
+
+    let map_list_div = document.getElementById('mapList');
+    let civ_list_div = document.getElementById('civList');
+    let map_icons_list = map_list_div.getElementsByClassName('map_icon');
+    let civ_icons_list = civ_list_div.getElementsByClassName('civ_icon');
+    for(let icon of map_icons_list){
+        icon.onclick = undefined;
+    }
+    for(let icon of civ_icons_list){
+        icon.onclick = undefined;
+    }
+
+    let host_bans_div = document.getElementById('hostBans');
+    let guest_bans_div = document.getElementById('guestBans');
+
+    function f(icon_els, ban_ids){
+        for(let n=0; n<ban_ids.length; n+=1){
+            let id = ban_ids[n];
+            let icon = document.getElementById(id);
+            icon_els[n].src=icon.src;
+            icon.classList.add('banned')
+        }
+    }
+
+    let host_bans_map_icons = host_bans_div.getElementsByClassName('map_icon');
+    f(host_bans_map_icons, host_bans.map_bans)
+    let host_bans_civ_icons = host_bans_div.getElementsByClassName('civ_icon');
+    f(host_bans_civ_icons, host_bans.civ_bans)
+    let guest_bans_map_icons = guest_bans_div.getElementsByClassName('map_icon');
+    f(guest_bans_map_icons, guest_bans.map_bans)
+    let guest_bans_civ_icons = guest_bans_div.getElementsByClassName('civ_icon');
+    f(guest_bans_civ_icons, guest_bans.civ_bans)
+
+    update_bans_text();
+}
+function server_update_round(action_json){
+    let map_id = action_json.map;
+    let host_civ_id = action_json.host_civ;
+    let guest_civ_id = action_json.guest_civ;
+    let r = action_json.round_numb;
+
+    let src_map_icon = document.getElementById(map_id);
+    let src_host_civ_icon = document.getElementById(host_civ_id);
+    let src_guest_civ_icon = document.getElementById(guest_civ_id);
+
+    let round_div = document.getElementById('round_'+r);
+    round_div.removeAttribute('style');
+
+    let host_civ_div = document.getElementById('host_civ_r'+r);
+    let host_civ_icon_div = document.createElement('img');
+    host_civ_icon_div.src = src_host_civ_icon.src;
+    host_civ_icon_div.classList.add('civ_icon');
+    host_civ_div.appendChild(host_civ_icon_div);
+
+    let guest_civ_div = document.getElementById('guest_civ_r'+r);
+    let guest_civ_icon_div = document.createElement('img');
+    guest_civ_icon_div.src = src_guest_civ_icon.src;
+    guest_civ_icon_div.classList.add('civ_icon');
+    guest_civ_div.appendChild(guest_civ_icon_div);
+
+    let map_div = document.getElementById('map_r'+r);
+    let map_icon_div = document.createElement('img');
+    map_icon_div.src = src_map_icon.src;
+    map_icon_div.classList.add('map_icon');
+    map_div.appendChild(map_icon_div);
+}
+
 function update_bans_text(){
     let civ_bans_text = document.getElementById('civBansText');
     let map_bans_text = document.getElementById('mapBansText');
