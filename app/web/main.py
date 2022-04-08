@@ -7,7 +7,6 @@ import re
 import tempfile
 import json
 from typing import Union
-import filelock
 
 maps_icon_list = {
     'acropolis' : 'MapsIcons/rm_acropolis.png',
