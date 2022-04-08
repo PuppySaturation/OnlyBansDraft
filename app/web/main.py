@@ -261,7 +261,7 @@ async def host_ws(draft_id: str):
                 if draft_json['draft_stage'] != 'waiting_round':
                     await websocket.send_json({'response': 'next round cannot be started at this stage'})
                     continue
-                draft_json = await broadcast_round_start(draft_json)
+                await broadcast_round_start(draft_id)
 
             elif recv_json['action'] == 'insta_ban':
                 # is it the right stage?
@@ -328,7 +328,7 @@ async def join_ws(draft_id: str):
                 if draft_json['draft_stage'] != 'waiting_round':
                     await websocket.send_json({'response': 'next round cannot be started at this stage'})
                     continue
-                draft_json = await broadcast_round_start(draft_json)
+                await broadcast_round_start(draft_id)
 
             elif recv_json['action'] == 'insta_ban':
                 # is it the right stage?
@@ -384,9 +384,11 @@ async def broadcast_bans_update(draft_json):
     return draft_json
 
 
-async def broadcast_round_start(draft_json):
+async def broadcast_round_start(draft_id):
     global connected_hosts, connected_guests
-    draft_id = draft_json['draft_id']
+    draft_json = load_draft_file(draft_id)
+    if draft_json['draft_stage'] != 'waiting_round':
+        return
     connected_hosts[draft_id] = None
     connected_guests[draft_id] = None
 
@@ -467,9 +469,18 @@ async def broadcast_round_progress(draft_json):
 
 async def broadcast_instaban(draft_id, user, target):
     draft_json = load_draft_file(draft_id)
+    if user == 'host' and draft_json['draft_stage'] != 'host_round':
+        return
+    if user == 'guest' and draft_json['draft_stage'] != 'guest_round':
+        return
+
     if user == 'host':
+        if draft_json['host_insta_bans'] >= draft_json['insta_bans']:
+            return
         draft_json['host_insta_bans'] += 1
     elif user == 'guest':
+        if draft_json['guest_insta_bans'] >= draft_json['insta_bans']:
+            return
         draft_json['guest_insta_bans'] += 1
 
     i = random.randint(0, len(draft_json['available_civs']))
@@ -485,7 +496,7 @@ async def broadcast_instaban(draft_id, user, target):
     draft_json['actions'].append(action_json)
     draft_json = update_draft_file(draft_id, draft_json)
     await broadcast_update(action_json, draft_id)
-    return draft_json
+    return
 
 
 connected_watchers = {}
