@@ -360,10 +360,10 @@ async def broadcast_bans_update(draft_json):
 
     draft_json['available_maps'] = [k for k in maps_icon_list
                                     if k not in host_bans['map_bans']
-                                    or k not in guest_bans['map_bans']]
+                                    and k not in guest_bans['map_bans']]
     draft_json['available_civs'] = [k for k in civs_icon_list
                                     if k not in host_bans['civ_bans']
-                                    or k not in guest_bans['civ_bans']]
+                                    and k not in guest_bans['civ_bans']]
 
     random.shuffle(draft_json['available_maps'])
     random.shuffle(draft_json['available_civs'])
