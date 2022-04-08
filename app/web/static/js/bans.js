@@ -393,6 +393,12 @@ function server_update_instaban(action_json){
         }
         ws_connection.send(JSON.stringify(action_json));
     };
+
+    if((user=='guest' && view_type_param=='join') ||
+       (user=='host' && view_type_param=='host')){
+       insta_bans_count += 1;
+       update_bans_text();
+    }
 }
 
 function server_finish_round(action_json){
