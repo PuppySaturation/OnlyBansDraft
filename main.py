@@ -405,7 +405,7 @@ async def broadcast_round_start(draft_json):
         draft_json['draft_stage'] = 'guest_round'
     draft_json = update_draft_file(draft_id, draft_json)
 
-    await broadcast_update(action_json, draft_json['draft_id'])
+    bu_pending = broadcast_update(action_json, draft_json['draft_id'])
 
     action_json = {
         'action': 'ready_round',
@@ -416,6 +416,10 @@ async def broadcast_round_start(draft_json):
         action_json['target'] = 'host'
     else:
         action_json['target'] = 'join'
+    draft_json['actions'].append(action_json)
+    draft_json = update_draft_file(draft_id, draft_json)
+
+    await bu_pending
     await broadcast_update(action_json, draft_json['draft_id'])
     return draft_json
 
@@ -449,6 +453,7 @@ async def broadcast_round_progress(draft_json):
 
     action_json['round_numb'] = r
     draft_json['draft_stage'] = next_stage
+    draft_json['actions'].append(action_json)
     draft_json = update_draft_file(draft_id, draft_json)
 
     await broadcast_update(action_json, draft_id)
