@@ -393,11 +393,11 @@ async def broadcast_round_start(draft_id):
     connected_guests[draft_id] = None
 
     draft_json['round_numb'] += 1
-    i = random.randint(0, len(draft_json['available_maps']))
+    i = random.randint(0, len(draft_json['available_maps'])-1)
     map_id = draft_json['available_maps'].pop(i)
-    i = random.randint(0, len(draft_json['available_civs']))
+    i = random.randint(0, len(draft_json['available_civs'])-1)
     host_civ_id = draft_json['available_civs'].pop(i)
-    i = random.randint(0, len(draft_json['available_civs']))
+    i = random.randint(0, len(draft_json['available_civs'])-1)
     guest_civ_id = draft_json['available_civs'].pop(i)
 
     action_json = {'action': 'start_round',
