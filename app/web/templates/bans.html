@@ -16,20 +16,26 @@
 <img class='banner' src="{{url_for('static', filename='onlybans2.png')}}"
 <div>
     {% if type == 'host' %}
-    <p>Share this code to join or watch the draft: <b>{{draft_id}}</b></p>
+    <p class="instruction_text">Share this code to join or watch the draft: <b>{{draft_id}}</b></p>
     {% endif %}
 </div>
 
 <div id="mapList">
-    <p>Maps (click to add/remove ban):</p>
+    <p class="instruction_text">Maps (click to add/remove ban):</p>
     {% for map_key, map_src in maps_list.items() %}
-    <img class="map_icon" id='{{map_key}}' src='{{url_for("static", filename=map_src)}}'>
+    <div class="icon_div">
+        <img class="map_icon" id='{{map_key}}' src='{{url_for("static", filename=map_src)}}'>
+        <p class="label_text">{{map_key}}</p>
+    </div>
     {% endfor %}
 </div>
 <div id="civList">
-    <p>Civs (click to add/remove ban):</p>
+    <p class="instruction_text">Civs (click to add/remove ban):</p>
     {% for civ_key, civ_src in civs_list.items() %}
-    <img class="civ_icon" id='{{civ_key}}' src='{{url_for("static", filename=civ_src)}}'>
+    <div class="icon_div">
+        <img class="civ_icon" id='{{civ_key}}' src='{{url_for("static", filename=civ_src)}}'>
+        <p class="label_text">{{civ_key}}</p>
+    </div>
     {% endfor %}
 </div>
 <div>
@@ -37,12 +43,18 @@
         <h2>Host bans</h2>
         <div id="hostMapBans">
             {% for i in range(map_bans) %}
-            <img class="map_icon" id="host_map_ban_{{i}}" src="{{url_for('static', filename='icon_placeholder.png')}}">
+            <div class="icon_div">
+                <img class="map_icon" id="host_map_ban_{{i}}" src="{{url_for('static', filename='icon_placeholder.png')}}">
+                <p class="label_text">???</p>
+            </div>
             {% endfor %}
         </div>
         <div id="hostCivBans">
             {% for i in range(civ_bans) %}
-            <img class="civ_icon" id="host_civ_ban_{{i}}" src="{{url_for('static', filename='icon_placeholder.png')}}">
+            <div class="icon_div">
+                <img class="civ_icon" id="host_civ_ban_{{i}}" src="{{url_for('static', filename='icon_placeholder.png')}}">
+                <p class="label_text">???</p>
+            </div>
             {% endfor %}
         </div>
         <button class="ready_btn">Bans Ready</button>
@@ -51,12 +63,18 @@
         <h2>Guest bans</h2>
         <div id="guestMapBans">
             {% for i in range(map_bans) %}
-            <img class="map_icon" id="guest_map_ban_{{i}}" src="{{url_for('static', filename='icon_placeholder.png')}}">
+            <div class="icon_div">
+                <img class="map_icon" id="guest_map_ban_{{i}}" src="{{url_for('static', filename='icon_placeholder.png')}}">
+                <p class="label_text">???</p>
+            </div>
             {% endfor %}
         </div>
         <div id="guestCivBans">
             {% for i in range(civ_bans) %}
-            <img class="civ_icon" id="guest_civ_ban_{{i}}" src="{{url_for('static', filename='icon_placeholder.png')}}">
+            <div class="icon_div">
+                <img class="civ_icon" id="guest_civ_ban_{{i}}" src="{{url_for('static', filename='icon_placeholder.png')}}">
+                <p class="label_text">???</p>
+            </div>
             {% endfor %}
         </div>
         <button class="ready_btn">Bans Ready</button>
@@ -69,7 +87,7 @@
     {% for r in range(rounds) %}
     <div id="round_{{r}}" class="round_selection">
         <h2>(Host) Round {{r+1}} (Guest)</h2>
-        <p id="message_r{{r}}">click civ to insta-ban</p>
+        <p class="instruction_text" id="message_r{{r}}">click civ to insta-ban</p>
         <div id="host_civ_r{{r}}" class="host_civ_selection">
         </div>
         <div id="map_r{{r}}" class="map_selection">
@@ -89,9 +107,10 @@
 </div>
 
 <div id="messageBoard">
-    <p id="messageText"></p> <p id="mapBansText"></p>
-    <p id="civBansText"></p>
-    <p id="instaBansText"></p>
+    <p class="instruction_text" id="messageText"></p>
+    <p class="instruction_text" id="mapBansText"></p>
+    <p class="instruction_text" id="civBansText"></p>
+    <p class="instruction_text" id="instaBansText"></p>
 
     <p>
         Age of Empires II © Microsoft Corporation. This utility was created under <a href="https://www.xbox.com/en-us/developers/rules">Microsoft's "Game Content Usage Rules"</a> using assets from Age of Empires II, and it is not endorsed by or affiliated with Microsoft.

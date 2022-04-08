@@ -9,6 +9,15 @@ h1, h2 {
   text-align: center;
 }
 
+.instruction_text {
+  font-weight: bold;
+  color: red;
+}
+
+.label_text {
+  font-size: 10pt;
+}
+
 .map_icon {
   height : 80pt;
   width : 80pt;
@@ -17,6 +26,10 @@ h1, h2 {
 .civ_icon {
   height : 60pt;
   width: 60pt;
+}
+
+.icon_div {
+  display: inline-block;
 }
 
 .banned {
