@@ -314,6 +314,7 @@ function server_update_round(action_json){
     let host_civ_icon_div = document.createElement('img');
     host_civ_icon_div.src = src_host_civ_icon.src;
     host_civ_icon_div.classList.add('civ_icon');
+    removeAllChildren(host_civ_div);
     host_civ_div.appendChild(host_civ_icon_div);
 
     host_civ_icon_div.onclick = ()=>{
@@ -328,6 +329,7 @@ function server_update_round(action_json){
     let guest_civ_icon_div = document.createElement('img');
     guest_civ_icon_div.src = src_guest_civ_icon.src;
     guest_civ_icon_div.classList.add('civ_icon');
+    removeAllChildren(guest_civ_div);
     guest_civ_div.appendChild(guest_civ_icon_div);
 
    guest_civ_icon_div.onclick = ()=>{
@@ -342,7 +344,14 @@ function server_update_round(action_json){
     let map_icon_div = document.createElement('img');
     map_icon_div.src = src_map_icon.src;
     map_icon_div.classList.add('map_icon');
+    removeAllChildren(map_div);
     map_div.appendChild(map_icon_div);
+}
+
+function removeAllChildren(parent_node){
+    while(parent_node.firstChild){
+        parent_node.removeChild(parent_node.firstChild);
+    }
 }
 
 function server_ready_round(action_json){
