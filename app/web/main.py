@@ -1,4 +1,4 @@
-from quart import Quart, render_template, url_for, redirect, app, websocket
+from quart import Quart, request, render_template, url_for, redirect, app, websocket
 import asyncio
 import random
 from functools import wraps
@@ -219,12 +219,15 @@ def validate_bans(draft_json: dict, bans_json: dict) -> Union[str, None]:
 
 @app.websocket('/host/ws/<string:draft_id>')
 async def host_ws(draft_id: str):
-    global connected_hosts, connected_guests
-    if draft_id in connected_hosts:
+    global connected_hosts, connected_guests, connected_hosts_ip, connected_guests_ip
+    if draft_id not in connected_hosts_ip:
+        connected_hosts_ip[draft_id] = websocket.remote_addr
+    if connected_hosts_ip[draft_id] != websocket.remote_addr:
         await websocket.send_json({'response': 'host already connected for this draft'})
         return
+    if draft_id not in connected_hosts:
+        connected_hosts[draft_id] = None
 
-    connected_hosts[draft_id] = None
     try:
         while True:
             recv_json = await websocket.receive_json()
@@ -283,12 +286,15 @@ async def host_ws(draft_id: str):
 
 @app.websocket('/join/ws/<string:draft_id>')
 async def join_ws(draft_id: str):
-    global connected_guests
-    if draft_id in connected_guests:
+    global connected_guests, connected_guests_ip
+    if draft_id not in connected_guests_ip:
+        connected_guests_ip[draft_id] = websocket.remote_addr
+    if connected_guests_ip[draft_id] != websocket.remote_addr:
         await websocket.send_json({'response': 'guest already connected'})
         return
-
-    connected_guests[draft_id]=None
+    if draft_id not in connected_guests:
+        connected_guests[draft_id] = None
+    
     try:
         while True:
             recv_json = await websocket.receive_json()
@@ -348,7 +354,8 @@ async def join_ws(draft_id: str):
 
 connected_hosts = {}
 connected_guests = {}
-
+connected_hosts_ip = {}
+connected_guests_ip = {}
 
 async def broadcast_bans_update(draft_json):
     global connected_hosts, connected_guests
