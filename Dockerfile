@@ -20,7 +20,7 @@ RUN set -e; \
 	rm -rf /var/cache/apk/*
 
 
-
+RUN chmod +x app/run.sh
 # Copy local code to the container image.
 ENV APP_DIR /app
 WORKDIR $APP_DIR

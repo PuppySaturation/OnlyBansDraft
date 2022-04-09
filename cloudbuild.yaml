@@ -1,4 +1,10 @@
  steps:
+ # Build the container image
+ - name: 'gcr.io/cloud-builders/docker'
+   args: ['build', '-t', 'gcr.io/eco-groove-292315/onlybans-draft:$COMMIT_SHA', '.']
+ # Push the container image to Container Registry
+ - name: 'gcr.io/cloud-builders/docker'
+   args: ['push', 'gcr.io/eco-groove-292315/onlybans-draft:$COMMIT_SHA']
  # Deploy container image to Cloud Run
  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
    entrypoint: gcloud
@@ -7,8 +13,8 @@
    - 'run'
    - 'deploy'
    - 'onlybans-draft'
-   - '--source'
-   - '.'
+   - '--image'
+   - 'gcr.io/eco-groove-292315/onlybans-draft:$COMMIT_SHA'
    - '--region'
    - 'europe-west1'
    - '--execution-environment'
