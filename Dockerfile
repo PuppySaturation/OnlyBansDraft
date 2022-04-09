@@ -28,8 +28,9 @@ COPY . ./
 # Set fallback mount directory
 ENV MNT_DIR $APP_DIR/app/web/data
 # copy config files
+RUN chmod +x /app/run.sh
 COPY ./app ${APP_DIR}
-RUN chmod +x ${APP_DIR}/app/run.sh
+
 
 VOLUME ["${APP_DIR}"]
 
