@@ -20,15 +20,16 @@ RUN set -e; \
 	rm -rf /var/cache/apk/*
 
 
-RUN chmod +x app/run.sh
 # Copy local code to the container image.
 ENV APP_DIR /app
 WORKDIR $APP_DIR
 COPY . ./
+
 # Set fallback mount directory
 ENV MNT_DIR $APP_DIR/app/web/data
 # copy config files
 COPY ./app ${APP_DIR}
+RUN chmod +x ${APP_DIR}/app/run.sh
 
 VOLUME ["${APP_DIR}"]
 
