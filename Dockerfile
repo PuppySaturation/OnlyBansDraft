@@ -23,14 +23,12 @@ RUN set -e; \
 # Copy local code to the container image.
 ENV APP_DIR /app
 WORKDIR $APP_DIR
-COPY . ./
 
 # Set fallback mount directory
 ENV MNT_DIR $APP_DIR/app/web/data
 # copy config files
-RUN chmod +x /app/run.sh
 COPY ./app ${APP_DIR}
-
+RUN chmod +x ${APP_DIR}/run.sh
 
 VOLUME ["${APP_DIR}"]
 
