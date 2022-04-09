@@ -223,7 +223,7 @@ async def host_ws(draft_id: str):
     if draft_id not in connected_hosts_ip:
         connected_hosts_ip[draft_id] = websocket.remote_addr
     if connected_hosts_ip[draft_id] != websocket.remote_addr:
-        await websocket.send_json({'response': 'host already connected for this draft'})
+        await websocket.send_json({'response': 'Host already connected for this draft.'})
         return
     if draft_id not in connected_hosts:
         connected_hosts[draft_id] = None
@@ -233,16 +233,16 @@ async def host_ws(draft_id: str):
             recv_json = await websocket.receive_json()
             draft_json = load_draft_file(draft_id)
             if 'action' not in recv_json:
-                await websocket.send_json({'response': 'invalid json package'})
+                await websocket.send_json({'response': 'Invalid json package. Try to refresh page (ctrl+shift+R).'})
                 continue
             if recv_json['action'] == 'submit_bans':
                 # is it the right stage?
                 if draft_json['draft_stage'] != 'bans':
-                    await websocket.send_json({'response': 'bans cannot be submitted at this stage'})
+                    await websocket.send_json({'response': 'Bans cannot be submitted at this stage.'})
                     continue
                 # have you submitted bans before?
                 if connected_hosts[draft_id]:
-                    await websocket.send_json({'response': 'bans submitted, waiting for guest'})
+                    await websocket.send_json({'response': 'Bans already submitted, waiting for guest.'})
                     continue
                 # are the bans valid?
                 valid_resp = validate_bans(draft_json, recv_json)
@@ -259,25 +259,25 @@ async def host_ws(draft_id: str):
             elif recv_json['action'] == 'next_round':
                 # is it the right stage?
                 if draft_json['draft_stage'] != 'waiting_round':
-                    await websocket.send_json({'response': 'next round cannot be started at this stage'})
+                    await websocket.send_json({'response': 'Next round cannot be started at this stage.'})
                     continue
                 await broadcast_round_start(draft_id)
 
             elif recv_json['action'] == 'insta_ban':
                 # is it the right stage?
                 if draft_json['draft_stage'] != 'host_round':
-                    await websocket.send_json({'response': 'host cannot insta ban at this stage'})
+                    await websocket.send_json({'response': 'Host cannot insta ban at this stage.'})
                     continue
                 # do we still have insta bans?
                 if draft_json['host_insta_bans'] >= draft_json['insta_bans']:
-                    await websocket.send_json({'response': 'no insta bans remaining'})
+                    await websocket.send_json({'response': 'No insta bans remaining.'})
                     continue
                 await broadcast_instaban(draft_id, 'host', recv_json['target'])
 
             elif recv_json['action'] == 'ready_round':
                 # is it the right stage?
                 if draft_json['draft_stage'] != 'host_round':
-                    await websocket.send_json({'response': 'host cannot continue round at this stage'})
+                    await websocket.send_json({'response': 'Host cannot continue round at this stage.'})
                     continue
                 await broadcast_round_progress(draft_json)
     finally:
@@ -290,7 +290,7 @@ async def join_ws(draft_id: str):
     if draft_id not in connected_guests_ip:
         connected_guests_ip[draft_id] = websocket.remote_addr
     if connected_guests_ip[draft_id] != websocket.remote_addr:
-        await websocket.send_json({'response': 'guest already connected'})
+        await websocket.send_json({'response': 'Guest already connected.'})
         return
     if draft_id not in connected_guests:
         connected_guests[draft_id] = None
@@ -300,16 +300,16 @@ async def join_ws(draft_id: str):
             recv_json = await websocket.receive_json()
             draft_json = load_draft_file(draft_id)
             if 'action' not in recv_json:
-                await websocket.send_json({'response': 'invalid json package'})
+                await websocket.send_json({'response': 'Invalid json package. Try to refresh page (ctrl+shift+R).'})
                 continue
             if recv_json['action'] == 'submit_bans':
                 # is it the right stage?
                 if draft_json['draft_stage'] != 'bans':
-                    await websocket.send_json({'response': 'bans cannot be submitted at this stage'})
+                    await websocket.send_json({'response': 'Bans cannot be submitted at this stage.'})
                     continue
                 # have you submitted bans before?
                 if connected_guests[draft_id]:
-                    await websocket.send_json({'response': 'bans submitted, waiting for host'})
+                    await websocket.send_json({'response': 'Bans already submitted, waiting for host.'})
                     continue
                 # are the bans valid?
                 valid_resp = validate_bans(draft_json, recv_json)
@@ -326,25 +326,25 @@ async def join_ws(draft_id: str):
             elif recv_json['action'] == 'next_round':
                 # is it the right stage?
                 if draft_json['draft_stage'] != 'waiting_round':
-                    await websocket.send_json({'response': 'next round cannot be started at this stage'})
+                    await websocket.send_json({'response': 'Next round cannot be started at this stage.'})
                     continue
                 await broadcast_round_start(draft_id)
 
             elif recv_json['action'] == 'insta_ban':
                 # is it the right stage?
                 if draft_json['draft_stage'] != 'guest_round':
-                    await websocket.send_json({'response': 'guest cannot insta ban at this stage'})
+                    await websocket.send_json({'response': 'Guest cannot insta ban at this stage.'})
                     continue
                 # do we still have insta bans?
                 if draft_json['guest_insta_bans'] >= draft_json['insta_bans']:
-                    await websocket.send_json({'response': 'no insta bans remaining'})
+                    await websocket.send_json({'response': 'No insta bans remaining.'})
                     continue
                 await broadcast_instaban(draft_id, 'guest', recv_json['target'])
 
             elif recv_json['action'] == 'ready_round':
                 # is it the right stage?
                 if draft_json['draft_stage'] != 'guest_round':
-                    await websocket.send_json({'response': 'guest cannot continue round at this stage'})
+                    await websocket.send_json({'response': 'Guest cannot continue round at this stage.'})
                     continue
                 await broadcast_round_progress(draft_json)
 

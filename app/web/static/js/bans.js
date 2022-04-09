@@ -91,9 +91,12 @@ function init(view_type, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
         ws_address += view_type+'/ws/'+draft_id;
         ws_connection = new ReconnectingWebSocket(ws_address);
         ws_connection.onmessage = (event)=>{
-            action_json = JSON.parse(event.data);
-            console.log(action_json);
-            process_server_action(action_json);
+            response_json = JSON.parse(event.data);
+            console.log(response_json);
+            if(response_json.response != 'ok'){
+                window.alert(response_json.response);
+            }
+
         }
     }
 
