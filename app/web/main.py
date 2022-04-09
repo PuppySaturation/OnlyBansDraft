@@ -200,19 +200,19 @@ async def watch_draft(draft_id: str):
 
 def validate_bans(draft_json: dict, bans_json: dict) -> Union[str, None]:
     if 'map_bans' not in bans_json:
-        return 'missing map_bans'
+        return 'Missing map_bans'
     if len(bans_json['map_bans']) != draft_json['map_bans']:
-        return f'wrong number of map bans: {len(bans_json["map_bans"])}'
+        return f'Wrong number of map bans: {len(bans_json["map_bans"])}'
     for map_id in bans_json['map_bans']:
         if map_id not in maps_icon_list:
-            return f'unrecognized map: {map_id}'
+            return f'Unrecognized map: {map_id}'
     if 'civ_bans' not in bans_json:
-        return 'missing civ_bans'
+        return 'Missing civ_bans'
     if len(bans_json['civ_bans']) != draft_json['civ_bans']:
-        return f'wrong number of civ bans: {len(bans_json["civ_bans"])}'
+        return f'Wrong number of civ bans: {len(bans_json["civ_bans"])}'
     for civ_id in bans_json['civ_bans']:
         if civ_id not in civs_icon_list:
-            return f'unrecognized map: {civ_id}'
+            return f'Unrecognized civ: {civ_id}'
 
     return None
 
