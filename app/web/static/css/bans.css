@@ -82,10 +82,6 @@ h1, h2 {
   display: inline-block;
 }
 
-#messageBoard {
-  display: inline-block;
-}
-
 button {
 margin: 5pt;
 }
