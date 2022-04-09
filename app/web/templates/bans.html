@@ -13,12 +13,7 @@
     </script>
 </head>
 <body>
-<img class='banner' src="{{url_for('static', filename='onlybans2.png')}}"
-<div>
-    {% if type == 'host' %}
-    <p class="instruction_text">Share this code to join or watch the draft: <b>{{draft_id}}</b></p>
-    {% endif %}
-</div>
+<img class='banner' src="{{url_for('static', filename='onlybans2.png')}}"/>
 
 <div id="mapList">
     <p class="instruction_text">Maps (click to add/remove ban):</p>
@@ -107,6 +102,13 @@
 </div>
 
 <div id="messageBoard">
+    {% if type == 'host' %}
+    <h3 class="instruction_text">Host</h3>
+    <p class="instruction_text">Share this code to join or watch the draft: <b>{{draft_id}}</b></p>
+    {% endif %}
+    {% if type == 'join' %}
+    <h3 class="instruction_text">Guest</h3>
+    {% endif %}
     <p class="instruction_text" id="messageText"></p>
     <p class="instruction_text" id="mapBansText"></p>
     <p class="instruction_text" id="civBansText"></p>

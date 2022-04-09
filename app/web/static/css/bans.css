@@ -4,7 +4,7 @@ body {
 }
 
 .banner {
-    width: 200pt;
+    width: 300pt;
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -40,7 +40,7 @@ h1, h2 {
 }
 
 .civ_icon {
-  height : 60pt;
+  height: 60pt;
   width: 60pt;
 }
 
@@ -58,6 +58,7 @@ h1, h2 {
   text-align: center;
 }
 #mapList, #civList {
+  text-align: center;
    padding-left: 5%;
    padding-right: 5%;
 }
