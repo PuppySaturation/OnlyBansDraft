@@ -1,3 +1,16 @@
 .banner {
     width: 200pt;
 }
+body {
+    text-align: center;
+    background-color: black;
+    color: white;
+}
+
+a:link {
+    color: lightblue;
+}
+
+a:visited {
+    color: lightpink;
+}

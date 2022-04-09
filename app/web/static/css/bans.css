@@ -1,3 +1,7 @@
+body {
+    background: black;
+    color: white;
+}
 .banner {
     width: 200pt;
     display: block;
