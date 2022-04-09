@@ -102,6 +102,14 @@ function init(view_type, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
         let draft_json = JSON.parse(event.data);
         console.log(draft_json);
         if(draft_json.draft_id != undefined){
+            map_bans_max = draft_json.map_bans;
+            map_bans_count = 0;
+            civ_bans_max = draft_json.civ_bans;
+            civ_bans_count = 0;
+            insta_bans_max = draft_json.insta_bans;
+            insta_bans_count = 0;
+            update_bans_text();
+
             for(let action_json of draft_json.actions){
                 process_server_action(action_json);
             }
