@@ -31,7 +31,7 @@ h1, h2 {
 }
 
 .label_text {
-  font-size: 10pt;
+  font-size: 12pt;
 }
 
 .map_icon {
@@ -46,6 +46,8 @@ h1, h2 {
 
 .icon_div {
   display: inline-block;
+  margin-left: 5pt;
+  margin-right: 5pt;
 }
 
 .banned {
@@ -54,6 +56,10 @@ h1, h2 {
 
 #mapList, #civList, #guestBans, #hostBans {
   text-align: center;
+}
+#mapList, #civList {
+   padding-left: 5%;
+   padding-right: 5%;
 }
 
 #guestBans {
