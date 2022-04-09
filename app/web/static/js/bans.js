@@ -313,11 +313,28 @@ function enable_start_round(r){
     }
 }
 
+function clear_events_from_round(r){
+    let host_civ_div = document.getElementById('host_civ_r'+r);
+    let guest_civ_div = document.getElementById('guest_civ_r'+r);
+
+    for(let civ_icon_div of host_civ_div.childNodes){
+        civ_icon_div.onclick=undefined;
+    }
+    for(let civ_icon_div of guest_civ_div.childNodes){
+        civ_icon_div.onclick=undefined;
+    }
+
+}
+
 function server_update_round(action_json){
     let map_id = action_json.map;
     let host_civ_id = action_json.host_civ;
     let guest_civ_id = action_json.guest_civ;
     let r = action_json.round_numb;
+
+    if(r>0){
+        clear_events_from_round(r-1);
+    }
 
     let btn = document.getElementById('start_r'+r+'_btn');
     btn.hidden=true;
@@ -377,11 +394,14 @@ function server_ready_round(action_json){
     start_btn.onclick=undefined;
 
     let ready_btn = document.getElementById('ready_r'+r+'_btn');
+    let msg_p = document.getElementById('message_r'+r);
 
     if(ready_target!=view_type_param){
         ready_btn.hidden=true;
+        msg_p.innerText = 'waiting for opponent';
     }else{
         ready_btn.hidden=false;
+        msg_p.innerText = 'click civ to insta-ban';
         ready_btn.onclick = ()=>{
             let action_json = {'action':'ready_round'};
             ws_connection.send(JSON.stringify(action_json));
@@ -427,6 +447,8 @@ function server_update_instaban(action_json){
 function server_finish_round(action_json){
     let r = action_json.round_numb;
     let ready_btn = document.getElementById('ready_r'+r+'_btn');
+    let msg_p = document.getElementById('message_r'+r);
+    msg_p.innerText='';
     ready_btn.hidden=true;
     ready_btn.onclick=undefined;
     enable_start_round(r+1);
