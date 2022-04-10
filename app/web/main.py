@@ -1,4 +1,4 @@
-from quart import Quart, request, render_template, url_for, redirect, app, websocket
+from quart import Quart, render_template, url_for, redirect, app, websocket
 import asyncio
 import random
 from functools import wraps
@@ -153,7 +153,10 @@ async def new_draft(draft_template: str):
 
 @app.route("/host/<string:draft_id>")
 async def host_draft(draft_id: str):
-    draft_json = load_draft_file(draft_id)
+    try:
+        draft_json = load_draft_file(draft_id)
+    except FileNotFoundError:
+        return f"Couldn't load draft {draft_id}.", 404
     template_params = {
         'type': 'host',
         'draft_id': draft_id,
@@ -169,7 +172,10 @@ async def host_draft(draft_id: str):
 
 @app.route("/join/<string:draft_id>")
 async def join_draft(draft_id: str):
-    draft_json = load_draft_file(draft_id)
+    try:
+        draft_json = load_draft_file(draft_id)
+    except FileNotFoundError:
+        return f"Couldn't load draft {draft_id}.", 404
     template_params = {
         'type': 'join',
         'draft_id': draft_id,
@@ -184,7 +190,10 @@ async def join_draft(draft_id: str):
 
 @app.route("/watch/<string:draft_id>")
 async def watch_draft(draft_id: str):
-    draft_json = load_draft_file(draft_id)
+    try:
+        draft_json = load_draft_file(draft_id)
+    except FileNotFoundError:
+        return f"Couldn't load draft {draft_id}.", 404
     template_params = {
         'type': 'watch',
         'draft_id': draft_id,
@@ -231,7 +240,11 @@ async def host_ws(draft_id: str):
     try:
         while True:
             recv_json = await websocket.receive_json()
-            draft_json = load_draft_file(draft_id)
+            try:
+                draft_json = load_draft_file(draft_id)
+            except FileNotFoundError:
+                await websocket.send_json({'response': f'Invalid json draft id {draft_id}.'})
+                continue
             if 'action' not in recv_json:
                 await websocket.send_json({'response': 'Invalid json package. Try to refresh page (ctrl+shift+R).'})
                 continue
@@ -298,7 +311,11 @@ async def join_ws(draft_id: str):
     try:
         while True:
             recv_json = await websocket.receive_json()
-            draft_json = load_draft_file(draft_id)
+            try:
+                draft_json = load_draft_file(draft_id)
+            except FileNotFoundError:
+                await websocket.send_json({'response': f'Invalid json draft id {draft_id}.'})
+                continue
             if 'action' not in recv_json:
                 await websocket.send_json({'response': 'Invalid json package. Try to refresh page (ctrl+shift+R).'})
                 continue
