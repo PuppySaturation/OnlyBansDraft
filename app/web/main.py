@@ -208,8 +208,14 @@ async def watch_draft(draft_id: str):
 
 
 def validate_bans(draft_json: dict, bans_json: dict) -> Union[str, None]:
+    if 'action' not in bans_json:
+        return 'Missing action'
+    if bans_json['action'] != 'submit_bans':
+        return 'Unrecognized action'
     if 'map_bans' not in bans_json:
         return 'Missing map_bans'
+    if not isinstance(bans_json['map_bans'], list):
+        return 'map_bans not a list'
     if len(bans_json['map_bans']) != draft_json['map_bans']:
         return f'Wrong number of map bans: {len(bans_json["map_bans"])}'
     for map_id in bans_json['map_bans']:
@@ -217,6 +223,8 @@ def validate_bans(draft_json: dict, bans_json: dict) -> Union[str, None]:
             return f'Unrecognized map: {map_id}'
     if 'civ_bans' not in bans_json:
         return 'Missing civ_bans'
+    if not isinstance(bans_json['civ_bans'], list):
+        return 'civ_bans not a list'
     if len(bans_json['civ_bans']) != draft_json['civ_bans']:
         return f'Wrong number of civ bans: {len(bans_json["civ_bans"])}'
     for civ_id in bans_json['civ_bans']:
@@ -259,6 +267,7 @@ async def host_ws(draft_id: str):
                     continue
                 # are the bans valid?
                 valid_resp = validate_bans(draft_json, recv_json)
+                recv_json = {k: recv_json[k] for k in ['action', 'map_bans', 'civ_bans']}
                 if valid_resp is not None:
                     await websocket.send_json({'response': valid_resp})
                     continue
@@ -284,6 +293,9 @@ async def host_ws(draft_id: str):
                 # do we still have insta bans?
                 if draft_json['host_insta_bans'] >= draft_json['insta_bans']:
                     await websocket.send_json({'response': 'No insta bans remaining.'})
+                    continue
+                if recv_json['target'] not in ['host_civ', 'guest_civ']:
+                    await websocket.send_json({'response': 'Invalid target for insta ban.'})
                     continue
                 await broadcast_instaban(draft_id, 'host', recv_json['target'])
 
@@ -330,6 +342,7 @@ async def join_ws(draft_id: str):
                     continue
                 # are the bans valid?
                 valid_resp = validate_bans(draft_json, recv_json)
+                recv_json = {k: recv_json[k] for k in ['action', 'map_bans', 'civ_bans']}
                 if valid_resp is not None:
                     await websocket.send_json({'response': valid_resp})
                     continue
@@ -355,6 +368,9 @@ async def join_ws(draft_id: str):
                 # do we still have insta bans?
                 if draft_json['guest_insta_bans'] >= draft_json['insta_bans']:
                     await websocket.send_json({'response': 'No insta bans remaining.'})
+                    continue
+                if recv_json['target'] not in ['host_civ', 'guest_civ']:
+                    await websocket.send_json({'response': 'Invalid target for insta ban.'})
                     continue
                 await broadcast_instaban(draft_id, 'guest', recv_json['target'])
 
