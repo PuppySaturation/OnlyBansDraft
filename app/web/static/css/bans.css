@@ -1,6 +1,12 @@
+@font-face {
+  font-family: "BankGothic";
+  src: url(/static/fonts/BankGothic/BankGothicRegular.ttf) format("truetype");
+}
+
 body {
     background: black;
     color: white;
+    font-family: "BankGothic";
 }
 
 .banner {

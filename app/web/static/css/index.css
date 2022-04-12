@@ -1,3 +1,8 @@
+@font-face {
+  font-family: "BankGothic";
+  src: url(/static/fonts/BankGothic/BankGothicRegular.ttf) format("truetype");
+}
+
 .banner {
     width: 200pt;
 }
@@ -5,6 +10,7 @@ body {
     text-align: center;
     background-color: black;
     color: white;
+    font-family: "BankGothic";
 }
 
 a:link {
