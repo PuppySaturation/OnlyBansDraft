@@ -53,6 +53,12 @@ function init(view_type, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
     }
     if(view_type=='watch'){
         // only spectating
+        let map_list_div = document.getElementById('mapList');
+        let map_list_text = map_list_div.getElementsByClassName('instruction_text')[0];
+        map_list_text.innerText = "";
+        let civ_list_div = document.getElementById('civList');
+        let civ_list_text = civ_list_div.getElementsByClassName('instruction_text')[0];
+        civ_list_text.innerText = "";
     }else{
         // interactive
         for(let icon of map_icons_list){
@@ -399,7 +405,10 @@ function server_ready_round(action_json){
     let ready_btn = document.getElementById('ready_r'+r+'_btn');
     let msg_p = document.getElementById('message_r'+r);
 
-    if(ready_target!=view_type_param){
+    if(view_type_param=='watch'){
+        ready_btn.hidden=true;
+        msg_p.innerText = '';
+    }else if(ready_target!=view_type_param){
         ready_btn.hidden=true;
         msg_p.innerText = 'waiting for opponent';
     }else{
