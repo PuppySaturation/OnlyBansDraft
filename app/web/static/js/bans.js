@@ -16,6 +16,14 @@ let img_placeholder_src = undefined;
 let view_type_param;
 
 function init(view_type, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
+
+    if(navigator.userAgent.indexOf('Chrome')==-1 &&
+        navigator.userAgent.indexOf('Firefox')==-1){
+        window.alert("This website was developed and tested on Chrome and Firefox browsers. "+
+         "This browser does not appear to be one of them. "+
+         "Please note, that some functionalities might not work.");
+    }
+
     view_type_param = view_type;
     map_bans_max = n_map_bans;
     civ_bans_max = n_civ_bans;
