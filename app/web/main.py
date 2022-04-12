@@ -247,7 +247,11 @@ async def host_ws(draft_id: str):
 
     try:
         while True:
-            recv_json = await websocket.receive_json()
+            try:
+                recv_json = await websocket.receive_json()
+            except json.decoder.JSONDecodeError:
+                await websocket.send_json({'response': 'Invalid request format.'})
+                return
             try:
                 draft_json = load_draft_file(draft_id)
             except FileNotFoundError:
@@ -322,7 +326,11 @@ async def join_ws(draft_id: str):
     
     try:
         while True:
-            recv_json = await websocket.receive_json()
+            try:
+                recv_json = await websocket.receive_json()
+            except json.decoder.JSONDecodeError:
+                await websocket.send_json({'response': 'Invalid request format.'})
+                return
             try:
                 draft_json = load_draft_file(draft_id)
             except FileNotFoundError:
