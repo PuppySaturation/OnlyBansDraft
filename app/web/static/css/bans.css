@@ -52,6 +52,7 @@ h1, h2 {
 
 .icon_div {
   display: inline-block;
+  text-align: center;
   margin-left: 5pt;
   margin-right: 5pt;
 }
@@ -89,14 +90,20 @@ h1, h2 {
 
 .host_civ_selection {
   display: inline-block;
+  width: 40%;
+  text-align: right;
 }
 
 .map_selection {
   display: inline-block;
+  width: 10%;
 }
 
 .guest_civ_selection {
   display: inline-block;
+  width: 40%;
+  text-align: left;
+  direction: rtl;
 }
 
 button {
