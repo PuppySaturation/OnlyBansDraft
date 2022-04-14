@@ -154,7 +154,7 @@ function submit_bans(){
     ws_connection.send(JSON.stringify(bans_submission));
 }
 
-function toggle_banned(element){
+function toggle_banned(element, banned_list){
     if(!element.classList.contains('banned')){
         element.classList.add('banned')
         return true;
@@ -349,10 +349,6 @@ function server_update_round(action_json){
     let guest_civ_id = action_json.guest_civ;
     let r = action_json.round_numb;
 
-    instaban_host_civ_id=host_civ_id;
-    instaban_guest_civ_id=guest_civ_id;
-    round_numb=r;
-
     if(r>0){
         clear_events_from_round(r-1);
     }
@@ -374,7 +370,11 @@ function server_update_round(action_json){
     host_civ_div.appendChild(host_civ_icon_div);
 
     host_civ_icon_div.onclick = ()=>{
-       set_instaban('host_civ');
+        let action_json={
+            'action':'insta_ban',
+            'target':'host_civ',
+        }
+        ws_connection.send(JSON.stringify(action_json));
     }
 
     let guest_civ_div = document.getElementById('guest_civ_r'+r);
@@ -383,70 +383,17 @@ function server_update_round(action_json){
     guest_civ_div.appendChild(guest_civ_icon_div);
 
    guest_civ_icon_div.onclick = ()=>{
-       set_instaban('guest_civ');
+        let action_json={
+            'action':'insta_ban',
+            'target':'guest_civ',
+        }
+        ws_connection.send(JSON.stringify(action_json));
     }
 
     let map_div = document.getElementById('map_r'+r);
     let map_icon_div = create_icon_div(src_map_template);
     removeAllChildren(map_div);
     map_div.appendChild(map_icon_div);
-}
-
-let turn_to_instaban=false;
-let round_numb;
-let instaban_target;
-let instaban_host_civ_id;
-let instaban_guest_civ_id;
-
-function set_instaban(target){
-    if(!turn_to_instaban){
-        return;
-    }
-    if(insta_bans_count>=insta_bans_max){
-        return;
-    }
-    toggle_instaban(instaban_target);
-    if(instaban_target==target){
-        instaban_target=undefined;
-    }else{
-        toggle_instaban(target);
-        instaban_target=target;
-    }
-    let ready_btn = document.getElementById('ready_r'+round_numb+'_btn');
-    if(instaban_target=='host_civ'){
-        ready_btn.innerText = 'Instaban '+instaban_host_civ_id;
-    }else if(instaban_target=='guest_civ'){
-        ready_btn.innerText = 'Instaban '+instaban_guest_civ_id;
-    }else{
-        ready_btn.innerText = 'Continue';
-    }
-}
-
-function toggle_instaban(target){
-    let civ_div;
-    if(target=='host_civ'){
-        civ_div = document.getElementById('host_civ_r'+round_numb);
-    }else if(target=='guest_civ'){
-        civ_div = document.getElementById('guest_civ_r'+round_numb);
-    }else{
-        return;
-    }
-    let civ_icon_div = civ_div.lastChild;
-    toggle_banned(civ_icon_div.getElementsByTagName('img')[0]);
-}
-
-function submit_instaban(){
-    if(instaban_target){
-        let action_json={
-            'action':'insta_ban',
-            'target':instaban_target,
-        }
-        ws_connection.send(JSON.stringify(action_json));
-        instaban_target=undefined;
-    }else{
-        let action_json = {'action':'ready_round'};
-        ws_connection.send(JSON.stringify(action_json));
-    }
 }
 
 function removeAllChildren(parent_node){
@@ -469,17 +416,15 @@ function server_ready_round(action_json){
     if(view_type_param=='watch'){
         ready_btn.hidden=true;
         msg_p.innerText = '';
-        turn_to_instaban=false;
     }else if(ready_target!=view_type_param){
         ready_btn.hidden=true;
         msg_p.innerText = 'waiting for opponent';
-        turn_to_instaban=false;
     }else{
         ready_btn.hidden=false;
         msg_p.innerText = 'click civ to insta-ban';
-        turn_to_instaban=true;
         ready_btn.onclick = ()=>{
-            submit_instaban();
+            let action_json = {'action':'ready_round'};
+            ws_connection.send(JSON.stringify(action_json));
         }
     }
 
@@ -493,11 +438,9 @@ function server_update_instaban(action_json){
     let civ_icons_div;
     if(target=='guest_civ'){
         civ_icons_div = document.getElementById('guest_civ_r'+r);
-        instaban_guest_civ_id=new_civ_id;
     }else
     if(target=='host_civ'){
         civ_icons_div = document.getElementById('host_civ_r'+r);
-        instaban_host_civ_id=new_civ_id;
     }
     let prev_civ_div = civ_icons_div.lastChild;
     prev_civ_div.getElementsByTagName('img')[0].classList.add('banned');
@@ -507,11 +450,12 @@ function server_update_instaban(action_json){
     civ_icons_div.appendChild(new_civ_div);
     prev_civ_div.onclick = undefined;
     new_civ_div.onclick = ()=>{
-       set_instaban(target);
+        let action_json={
+            'action':'insta_ban',
+            'target':target,
+        }
+        ws_connection.send(JSON.stringify(action_json));
     };
-
-    instaban_target=undefined;
-    set_instaban(undefined);
 
     if((user=='guest' && view_type_param=='join') ||
        (user=='host' && view_type_param=='host')){
@@ -521,7 +465,6 @@ function server_update_instaban(action_json){
 }
 
 function server_finish_round(action_json){
-    turn_to_instaban=false;
     let r = action_json.round_numb;
     let ready_btn = document.getElementById('ready_r'+r+'_btn');
     let msg_p = document.getElementById('message_r'+r);
