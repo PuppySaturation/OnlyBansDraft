@@ -35,7 +35,7 @@
 </div>
 <div>
     <div id="hostBans">
-        <h2>Host bans</h2>
+        <h2><span class="host_name">Host</span> bans</h2>
         <div id="hostMapBans">
             {% for i in range(map_bans) %}
             <div class="icon_div">
@@ -55,7 +55,7 @@
         <button class="ready_btn">Bans Ready</button>
     </div>
     <div id="guestBans">
-        <h2>Guest bans</h2>
+        <h2><span class="host_name">Guest</span> bans</h2>
         <div id="guestMapBans">
             {% for i in range(map_bans) %}
             <div class="icon_div">
@@ -81,7 +81,7 @@
     </div>
     {% for r in range(rounds) %}
     <div id="round_{{r}}" class="round_selection">
-        <h2>(Host) Round {{r+1}} (Guest)</h2>
+        <h2>(<span class="host_name">Host</span>) Round {{r+1}} (<span class="guest_name">Guest</span>)</h2>
         <p class="instruction_text" id="message_r{{r}}">click civ to insta-ban</p>
         <div id="host_civ_r{{r}}" class="host_civ_selection">
         </div>
@@ -105,11 +105,11 @@
 
 <div id="messageBoard">
     {% if type == 'host' %}
-    <h3 class="instruction_text">Host</h3>
+    <h3 class="instruction_text"><input id="name_textbox" type="text" value="Host"><button onclick="submit_name_update()">Change name</button></h3>
     <p class="instruction_text">Share this code to join or watch the draft: <b>{{draft_id}}</b></p>
     {% endif %}
     {% if type == 'join' %}
-    <h3 class="instruction_text">Guest</h3>
+    <h3 class="instruction_text"><input id="name_textbox" type="text" value="Guest"><button onclick="submit_name_update()">Change name</button></h3>
     {% endif %}
     <p class="instruction_text" id="messageText"></p>
     <p class="instruction_text" id="mapBansText"></p>

@@ -127,6 +127,9 @@ function init(view_type, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
             insta_bans_count = 0;
             update_bans_text();
 
+            update_host_name(draft_json.host_name);
+            update_guest_name(draft_json.guest_name);
+
             for(let action_json of draft_json.actions){
                 process_server_action(action_json);
             }
@@ -240,6 +243,10 @@ function update_civ_ban_icons(ind){
 
 function process_server_action(action_json){
     switch(action_json['action']){
+        case 'update_names':
+            update_host_name(action_json.host_name);
+            update_guest_name(action_json.guest_name);
+            break;
         case 'update_bans':
             server_update_bans(action_json);
             break;
@@ -515,6 +522,39 @@ function update_bans_text(){
     civ_bans_text.innerText = 'Number of civ bans remaining: '+(civ_bans_max-civ_bans_count)+'/'+(civ_bans_max);
     map_bans_text.innerText = 'Number of map bans remaining: '+(map_bans_max-map_bans_count)+'/'+(map_bans_max);
     insta_bans_text.innerText = 'Number of insta bans remaining: '+(insta_bans_max-insta_bans_count)+'/'+(insta_bans_max);
+}
+
+function submit_name_update(){
+    let name_tb = document.getElementById('name_textbox');
+    let new_name = name_tb.value;
+
+    let action_json = {
+    'action':'update_name',
+    'name':new_name,
+    };
+    ws_connection.send(JSON.stringify(action_json));
+}
+
+function update_host_name(new_name){
+    let host_name_els = document.getElementsByClassName('host_name');
+    for(let el of host_name_els){
+        el.innerText=new_name;
+    }
+    if(view_type_param=='host'){
+        let name_tb = document.getElementById('name_textbox');
+        name_tb.value=new_name;
+    }
+}
+
+function update_guest_name(new_name){
+    let host_name_els = document.getElementsByClassName('guest_name');
+    for(let el of host_name_els){
+        el.innerText=new_name;
+    }
+    if(view_type_param=='join'){
+        let name_tb = document.getElementById('name_textbox');
+        name_tb.value=new_name;
+    }
 }
 
 function create_icon_div(icon_div_template){

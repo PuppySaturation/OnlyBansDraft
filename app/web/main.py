@@ -72,6 +72,10 @@ def load_draft_file(draft_id: str) -> dict:
     data_path = os.path.join(app.root_path, 'data/', f'bans_{draft_id}.json')
     #with filelock.SoftFileLock(data_path):
     draft_json = json.load(open(data_path, 'r'))
+    if 'host_name' not in draft_json:
+        draft_json['host_name'] = 'Host'
+    if 'guest_name' not in draft_json:
+        draft_json['guest_name'] = 'Guest'
     return draft_json
 
 
@@ -104,6 +108,8 @@ async def new_draft(draft_template: str):
         'insta_bans': 0,
         'draft_stage': 'bans', # bans, waiting_round, round,
         'round_numb' : -1,
+        'host_name' : 'Host',
+        'guest_name' : 'Guest',
         'actions': [],
         'available_maps': [],
         'available_civs': [],
@@ -260,7 +266,17 @@ async def host_ws(draft_id: str):
             if 'action' not in recv_json:
                 await websocket.send_json({'response': 'Invalid json package. Try to refresh page (ctrl+shift+R).'})
                 continue
-            if recv_json['action'] == 'submit_bans':
+            if recv_json['action'] == 'update_name':
+                if len(recv_json['name']) > 15:
+                    await websocket.send_json({'response': 'Requested name longer than 15 characters, name is too long.'})
+                    continue
+                if not re.fullmatch('[a-zA-Z0-9\\-_]+', recv_json['name']):
+                    await websocket.send_json({'response': 'Requested name may only contain letters, numbers and symbols - and _. Must also contain at least 1 character.'})
+                    continue
+                draft_json['host_name'] = recv_json['name']
+                draft_json = update_draft_file(draft_id, draft_json)
+                await broadcast_names_update(draft_json)
+            elif recv_json['action'] == 'submit_bans':
                 # is it the right stage?
                 if draft_json['draft_stage'] != 'bans':
                     await websocket.send_json({'response': 'Bans cannot be submitted at this stage.'})
@@ -339,7 +355,18 @@ async def join_ws(draft_id: str):
             if 'action' not in recv_json:
                 await websocket.send_json({'response': 'Invalid json package. Try to refresh page (ctrl+shift+R).'})
                 continue
-            if recv_json['action'] == 'submit_bans':
+            if recv_json['action'] == 'update_name':
+                if len(recv_json['name']) > 15:
+                    await websocket.send_json({'response': 'Requested name longer than 15 characters, name is too long.'})
+                    continue
+                if not re.fullmatch('[a-zA-Z0-9\\-_]+', recv_json['name']):
+                    await websocket.send_json({'response': 'Requested name may only contain letters, numbers and symbols - and _. Must also contain at least 1 character.'})
+                    continue
+                draft_json['guest_name'] = recv_json['name']
+                draft_json = update_draft_file(draft_id, draft_json)
+                await broadcast_names_update(draft_json)
+
+            elif recv_json['action'] == 'submit_bans':
                 # is it the right stage?
                 if draft_json['draft_stage'] != 'bans':
                     await websocket.send_json({'response': 'Bans cannot be submitted at this stage.'})
@@ -397,6 +424,16 @@ connected_hosts = {}
 connected_guests = {}
 connected_hosts_ip = {}
 connected_guests_ip = {}
+
+
+async def broadcast_names_update(draft_json):
+    draft_id = draft_json['draft_id']
+    action_json = {'action': 'update_names',
+                   'host_name': draft_json['host_name'],
+                   'guest_name': draft_json['guest_name'],
+                   }
+    await broadcast_update(action_json, draft_id)
+    return draft_json
 
 async def broadcast_bans_update(draft_json):
     global connected_hosts, connected_guests
