@@ -369,7 +369,22 @@ function server_update_round(action_json){
     removeAllChildren(host_civ_div);
     host_civ_div.appendChild(host_civ_icon_div);
 
-    host_civ_icon_div.onclick = ()=>{
+    let guest_civ_div = document.getElementById('guest_civ_r'+r);
+    let guest_civ_icon_div = create_icon_div(src_guest_civ_template);
+    removeAllChildren(guest_civ_div);
+    guest_civ_div.appendChild(guest_civ_icon_div);
+
+
+    let ready_btn = document.getElementById('ready_r'+r+'_btn');
+    let iban_host_btn = document.getElementById('ban_host_r'+r+'_btn');
+    let iban_guest_btn = document.getElementById('ban_guest_r'+r+'_btn');
+    iban_host_btn.innerText = 'Insta-ban '+host_civ_id;
+    iban_guest_btn.innerText = 'Insta-ban '+guest_civ_id;
+
+    iban_host_btn.onclick = ()=>{
+        iban_host_btn.hidden=true;
+        iban_guest_btn.hidden=true;
+        ready_btn.hidden=true;
         let action_json={
             'action':'insta_ban',
             'target':'host_civ',
@@ -377,12 +392,10 @@ function server_update_round(action_json){
         ws_connection.send(JSON.stringify(action_json));
     }
 
-    let guest_civ_div = document.getElementById('guest_civ_r'+r);
-    let guest_civ_icon_div = create_icon_div(src_guest_civ_template);
-    removeAllChildren(guest_civ_div);
-    guest_civ_div.appendChild(guest_civ_icon_div);
-
-   guest_civ_icon_div.onclick = ()=>{
+   iban_guest_btn.onclick = ()=>{
+        iban_host_btn.hidden=true;
+        iban_guest_btn.hidden=true;
+        ready_btn.hidden=true;
         let action_json={
             'action':'insta_ban',
             'target':'guest_civ',
@@ -411,6 +424,8 @@ function server_ready_round(action_json){
     start_btn.onclick=undefined;
 
     let ready_btn = document.getElementById('ready_r'+r+'_btn');
+    let iban_host_btn = document.getElementById('ban_host_r'+r+'_btn');
+    let iban_guest_btn = document.getElementById('ban_guest_r'+r+'_btn');
     let msg_p = document.getElementById('message_r'+r);
 
     if(view_type_param=='watch'){
@@ -418,10 +433,16 @@ function server_ready_round(action_json){
         msg_p.innerText = '';
     }else if(ready_target!=view_type_param){
         ready_btn.hidden=true;
+        iban_host_btn.hidden=true;
+        iban_guest_btn.hidden=true;
         msg_p.innerText = 'waiting for opponent';
     }else{
         ready_btn.hidden=false;
-        msg_p.innerText = 'click civ to insta-ban';
+        if(insta_bans_count < insta_bans_max){
+            iban_host_btn.hidden=false;
+            iban_guest_btn.hidden=false;
+        }
+        msg_p.innerText = 'pick civ to insta-ban';
         ready_btn.onclick = ()=>{
             let action_json = {'action':'ready_round'};
             ws_connection.send(JSON.stringify(action_json));
@@ -436,11 +457,18 @@ function server_update_instaban(action_json){
     let user = action_json.user; // guest or host
     let r = action_json.round_numb; //
     let civ_icons_div;
+
+    let ready_btn = document.getElementById('ready_r'+r+'_btn');
+    let iban_host_btn = document.getElementById('ban_host_r'+r+'_btn');
+    let iban_guest_btn = document.getElementById('ban_guest_r'+r+'_btn');
+
     if(target=='guest_civ'){
         civ_icons_div = document.getElementById('guest_civ_r'+r);
+        iban_guest_btn.innerText='Insta-ban '+new_civ_id;
     }else
     if(target=='host_civ'){
         civ_icons_div = document.getElementById('host_civ_r'+r);
+        iban_host_btn.innerText='Insta-ban '+new_civ_id;
     }
     let prev_civ_div = civ_icons_div.lastChild;
     prev_civ_div.getElementsByTagName('img')[0].classList.add('banned');
@@ -448,29 +476,34 @@ function server_update_instaban(action_json){
     let civ_div_template = document.getElementById(new_civ_id).parentNode;
     let new_civ_div = create_icon_div(civ_div_template);
     civ_icons_div.appendChild(new_civ_div);
-    prev_civ_div.onclick = undefined;
-    new_civ_div.onclick = ()=>{
-        let action_json={
-            'action':'insta_ban',
-            'target':target,
-        }
-        ws_connection.send(JSON.stringify(action_json));
-    };
+
+
 
     if((user=='guest' && view_type_param=='join') ||
        (user=='host' && view_type_param=='host')){
        insta_bans_count += 1;
        update_bans_text();
+       ready_btn.hidden=false;
+        if(insta_bans_count < insta_bans_max){
+           iban_host_btn.hidden=false;
+           iban_guest_btn.hidden=false;
+       }
     }
 }
 
 function server_finish_round(action_json){
     let r = action_json.round_numb;
     let ready_btn = document.getElementById('ready_r'+r+'_btn');
+    let iban_host_btn = document.getElementById('ban_host_r'+r+'_btn');
+    let iban_guest_btn = document.getElementById('ban_guest_r'+r+'_btn');
     let msg_p = document.getElementById('message_r'+r);
     msg_p.innerText='';
     ready_btn.hidden=true;
+    iban_host_btn.hidden=true;
+    iban_guest_btn.hidden=true;
     ready_btn.onclick=undefined;
+    iban_host_btn.onclick=undefined;
+    iban_guest_btn.onclick=undefined;
     enable_start_round(r+1);
 }
 
