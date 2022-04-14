@@ -108,7 +108,9 @@ async def new_draft(draft_template: str):
         'insta_bans': 0,
         'draft_stage': 'bans', # bans, waiting_round, round,
         'round_numb' : -1,
+        'host_name_changed' : False,
         'host_name' : 'Host',
+        'guest_name_changed' : False,
         'guest_name' : 'Guest',
         'actions': [],
         'available_maps': [],
@@ -267,6 +269,10 @@ async def host_ws(draft_id: str):
                 await websocket.send_json({'response': 'Invalid json package. Try to refresh page (ctrl+shift+R).'})
                 continue
             if recv_json['action'] == 'update_name':
+                if 'host_name_changed' in draft_json and draft_json['host_name_changed']:
+                    await websocket.send_json(
+                        {'response': 'The name was already changed once. Sorry, only one chance.'})
+                    continue
                 if len(recv_json['name']) > 15:
                     await websocket.send_json({'response': 'Requested name longer than 15 characters, name is too long.'})
                     continue
@@ -274,6 +280,7 @@ async def host_ws(draft_id: str):
                     await websocket.send_json({'response': 'Requested name may only contain letters, numbers and symbols - and _. Must also contain at least 1 character.'})
                     continue
                 draft_json['host_name'] = recv_json['name']
+                draft_json['host_name_changed'] = True
                 draft_json = update_draft_file(draft_id, draft_json)
                 await broadcast_names_update(draft_json)
             elif recv_json['action'] == 'submit_bans':
@@ -356,6 +363,10 @@ async def join_ws(draft_id: str):
                 await websocket.send_json({'response': 'Invalid json package. Try to refresh page (ctrl+shift+R).'})
                 continue
             if recv_json['action'] == 'update_name':
+                if 'guest_name_changed' in draft_json and draft_json['guest_name_changed']:
+                    await websocket.send_json(
+                        {'response': 'The name was already changed once. Sorry, only one chance.'})
+                    continue
                 if len(recv_json['name']) > 15:
                     await websocket.send_json({'response': 'Requested name longer than 15 characters, name is too long.'})
                     continue
@@ -363,6 +374,7 @@ async def join_ws(draft_id: str):
                     await websocket.send_json({'response': 'Requested name may only contain letters, numbers and symbols - and _. Must also contain at least 1 character.'})
                     continue
                 draft_json['guest_name'] = recv_json['name']
+                draft_json['guest_name_changed'] = True
                 draft_json = update_draft_file(draft_id, draft_json)
                 await broadcast_names_update(draft_json)
 
