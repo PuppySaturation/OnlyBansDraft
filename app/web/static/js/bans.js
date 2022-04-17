@@ -7,6 +7,8 @@ let insta_bans_count = 0;
 let banned_map_list = [];
 let banned_civ_list = [];
 
+let bans_state = '';
+
 let my_bans_div=undefined;
 
 let ws_connection = undefined;
@@ -32,10 +34,11 @@ function init(view_type, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
     banned_map_list = Array(map_bans_max).fill(undefined);
     banned_civ_list = Array(civ_bans_max).fill(undefined);
 
+    bans_state = 'initial_bans';
+
     update_bans_text();
 
     msg_text = document.getElementById('messageText');
-
     map_list_div = document.getElementById('mapList');
     civ_list_div = document.getElementById('civList');
     host_bans_div = document.getElementById('hostBans');
@@ -67,6 +70,13 @@ function init(view_type, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
         let civ_list_div = document.getElementById('civList');
         let civ_list_text = civ_list_div.getElementsByClassName('instruction_text')[0];
         civ_list_text.innerText = "";
+
+        let civ_bans_text = document.getElementById('civBansText');
+        let map_bans_text = document.getElementById('mapBansText');
+        let insta_bans_text = document.getElementById('instaBansText');
+        civ_bans_text.hidden=true;
+        map_bans_text.hidden=true;
+        insta_bans_text.hidden=true;
     }else{
         // interactive
         for(let icon of map_icons_list){
@@ -125,6 +135,7 @@ function init(view_type, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
             civ_bans_count = 0;
             insta_bans_max = draft_json.insta_bans;
             insta_bans_count = 0;
+            bans_state = 'initial_bans';
             update_bans_text();
 
             update_host_name(draft_json.host_name);
@@ -355,6 +366,8 @@ function server_update_round(action_json){
     let host_civ_id = action_json.host_civ;
     let guest_civ_id = action_json.guest_civ;
     let r = action_json.round_numb;
+    bans_state = 'round_'+r;
+    update_bans_text();
 
     if(r>0){
         clear_events_from_round(r-1);
@@ -523,14 +536,29 @@ function server_finish_round(action_json){
 }
 
 function update_bans_text(){
-    let civ_bans_text = document.getElementById('civBansText');
-    let map_bans_text = document.getElementById('mapBansText');
-    let insta_bans_text = document.getElementById('instaBansText');
-
-    civ_bans_text.innerText = 'Number of civ bans remaining: '+(civ_bans_max-civ_bans_count)+'/'+(civ_bans_max);
-    map_bans_text.innerText = 'Number of map bans remaining: '+(map_bans_max-map_bans_count)+'/'+(map_bans_max);
-    insta_bans_text.innerText = 'Number of insta bans remaining: '+(insta_bans_max-insta_bans_count)+'/'+(insta_bans_max);
+   let civ_bans_text = document.getElementById('civBansText');
+   let map_bans_text = document.getElementById('mapBansText');
+   let insta_bans_text = document.getElementById('instaBansText');
+   if(view_type_param=='watch'){
+        civ_bans_text.hidden=false;
+        map_bans_text.hidden=false;
+        insta_bans_text.hidden=false;
+   }else
+   if(bans_state=='initial_bans'){
+        civ_bans_text.hidden=false;
+        map_bans_text.hidden=false;
+        insta_bans_text.hidden=true;
+        civ_bans_text.innerText = 'Number of civ bans remaining: '+(civ_bans_max-civ_bans_count)+'/'+(civ_bans_max);
+        map_bans_text.innerText = 'Number of map bans remaining: '+(map_bans_max-map_bans_count)+'/'+(map_bans_max);
+    }else
+    if(bans_state.startsWith('round')){
+        civ_bans_text.hidden=true;
+        map_bans_text.hidden=true;
+        insta_bans_text.hidden=false;
+        insta_bans_text.innerText = 'Number of insta bans remaining: '+(insta_bans_max-insta_bans_count)+'/'+(insta_bans_max);
+    }
 }
+
 
 function submit_name_update(){
     let name_tb = document.getElementById('name_textbox');
