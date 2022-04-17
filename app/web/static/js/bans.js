@@ -479,6 +479,11 @@ function server_update_instaban(action_json){
     }
     let prev_civ_div = civ_icons_div.lastChild;
     prev_civ_div.getElementsByTagName('img')[0].classList.add('banned');
+    if(user=='guest'){
+        prev_civ_div.getElementsByTagName('img')[0].classList.add('guest_banned');
+    }else if(user=='host'){
+        prev_civ_div.getElementsByTagName('img')[0].classList.add('host_banned');
+    }
 
     let civ_div_template = document.getElementById(new_civ_id).parentNode;
     let new_civ_div = create_icon_div(civ_div_template);
@@ -494,6 +499,9 @@ function server_update_instaban(action_json){
         if(insta_bans_count < insta_bans_max){
            iban_host_btn.hidden=false;
            iban_guest_btn.hidden=false;
+       }else{
+           iban_host_btn.hidden=true;
+           iban_guest_btn.hidden=true;
        }
     }
 }

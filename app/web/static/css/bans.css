@@ -61,6 +61,16 @@ h1, h2 {
   filter: grayscale(100%) blur(5px);
 }
 
+.guest_banned ~ p {
+    text-decoration: line-through;
+    color: coral;
+}
+
+.host_banned ~ p {
+    text-decoration: line-through;
+    color: skyblue;
+}
+
 #mapList, #civList, #guestBans, #hostBans {
   text-align: center;
 }
@@ -68,6 +78,14 @@ h1, h2 {
   text-align: center;
    padding-left: 5%;
    padding-right: 5%;
+}
+
+.host_name {
+    color: skyblue;
+}
+
+.guest_name {
+    color: coral;
 }
 
 #guestBans {
