@@ -19,7 +19,11 @@
     <p class="instruction_text">Maps (click to add/remove ban):</p>
     {% for map_key, map_src in maps_list.items() %}
     <div class="icon_div">
-        <img class="map_icon" id='{{map_key}}' src='{{url_for("static", filename=map_src)}}'>
+        <div class="subicon_div">
+            <img class="map_icon" id='{{map_key}}' src='{{url_for("static", filename=map_src)}}'>
+            <img class="ban_host_overlay" src='{{url_for("static", filename="ban_host.png")}}'>
+            <img class="ban_guest_overlay" src='{{url_for("static", filename="ban_guest.png")}}'>
+        </div>
         <p class="label_text">{{map_key}}</p>
     </div>
     {% endfor %}
@@ -28,7 +32,11 @@
     <p class="instruction_text">Civs (click to add/remove ban):</p>
     {% for civ_key, civ_src in civs_list.items() %}
     <div class="icon_div">
-        <img class="civ_icon" id='{{civ_key}}' src='{{url_for("static", filename=civ_src)}}'>
+        <div class="subicon_div">
+            <img class="civ_icon" id='{{civ_key}}' src='{{url_for("static", filename=civ_src)}}'>
+            <img class="ban_host_overlay" src='{{url_for("static", filename="ban_host.png")}}'>
+            <img class="ban_guest_overlay" src='{{url_for("static", filename="ban_guest.png")}}'>
+        </div>
         <p class="label_text">{{civ_key}}</p>
     </div>
     {% endfor %}
@@ -39,7 +47,9 @@
         <div id="hostMapBans">
             {% for i in range(map_bans) %}
             <div class="icon_div">
-                <img class="map_icon" id="host_map_ban_{{i}}" src="{{url_for('static', filename='icon_placeholder.png')}}">
+                <div class="subicon_div">
+                    <img class="map_icon" id="host_map_ban_{{i}}" src="{{url_for('static', filename='icon_placeholder.png')}}">
+                </div>
                 <p class="label_text">???</p>
             </div>
             {% endfor %}
@@ -47,7 +57,9 @@
         <div id="hostCivBans">
             {% for i in range(civ_bans) %}
             <div class="icon_div">
-                <img class="civ_icon" id="host_civ_ban_{{i}}" src="{{url_for('static', filename='icon_placeholder.png')}}">
+                <div class="subicon_div">
+                    <img class="civ_icon" id="host_civ_ban_{{i}}" src="{{url_for('static', filename='icon_placeholder.png')}}">
+                </div>
                 <p class="label_text">???</p>
             </div>
             {% endfor %}
@@ -59,7 +71,9 @@
         <div id="guestMapBans">
             {% for i in range(map_bans) %}
             <div class="icon_div">
-                <img class="map_icon" id="guest_map_ban_{{i}}" src="{{url_for('static', filename='icon_placeholder.png')}}">
+                <div class="subicon_div">
+                    <img class="map_icon" id="guest_map_ban_{{i}}" src="{{url_for('static', filename='icon_placeholder.png')}}">
+                </div>
                 <p class="label_text">???</p>
             </div>
             {% endfor %}
@@ -67,7 +81,9 @@
         <div id="guestCivBans">
             {% for i in range(civ_bans) %}
             <div class="icon_div">
-                <img class="civ_icon" id="guest_civ_ban_{{i}}" src="{{url_for('static', filename='icon_placeholder.png')}}">
+                <div class="subicon_div">
+                    <img class="civ_icon" id="guest_civ_ban_{{i}}" src="{{url_for('static', filename='icon_placeholder.png')}}">
+                </div>
                 <p class="label_text">???</p>
             </div>
             {% endfor %}

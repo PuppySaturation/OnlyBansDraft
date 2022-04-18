@@ -56,28 +56,49 @@ h1, h2 {
   margin-left: 5pt;
   margin-right: 5pt;
 }
+.subicon_div {
+  position: relative;
+  display: inline-block;
+}
 
 .banned {
-  filter: grayscale(100%) blur(5px);
+  filter: grayscale(100%);
 }
 
-.guest_banned ~ p {
-    text-decoration: line-through;
-    color: coral;
+.ban_guest_overlay {
+    visibility: hidden;
+    position:absolute;
+    top: 0;
+    left: 0;
+    height:auto;
+    width:100%;
+    pointer-events: none;
 }
 
-.host_banned ~ p {
-    text-decoration: line-through;
-    color: skyblue;
+.ban_host_overlay {
+    visibility: hidden;
+    position:absolute;
+    top: 0;
+    left: 0;
+    height:auto;
+    width:100%;
+    pointer-events: none;
+}
+
+.host_banned ~ .ban_host_overlay {
+    visibility: visible;
+}
+.guest_banned ~ .ban_guest_overlay {
+    visibility: visible;
 }
 
 #mapList, #civList, #guestBans, #hostBans {
-  text-align: center;
+    text-align: center;
 }
 #mapList, #civList {
-  text-align: center;
-   padding-left: 5%;
-   padding-right: 5%;
+    text-align: center;
+    padding-left: 5%;
+    padding-right: 5%;
 }
 
 .host_name {

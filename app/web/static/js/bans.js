@@ -170,9 +170,19 @@ function submit_bans(){
 
 function toggle_banned(element, banned_list){
     if(!element.classList.contains('banned')){
+        if(view_type_param=='host'){
+            element.classList.add('host_banned');
+        }else if(view_type_param=='join'){
+            element.classList.add('guest_banned');
+        }
         element.classList.add('banned')
         return true;
     }else{
+        if(view_type_param=='host'){
+            element.classList.remove('host_banned');
+        }else if(view_type_param=='join'){
+            element.classList.remove('guest_banned');
+        }
         element.classList.remove('banned')
         return false;
     }
@@ -229,10 +239,10 @@ function update_map_ban_icons(ind){
     }else{
         let map_icon = document.getElementById(map_id);
         img_src=map_icon.src;
-        label_text=map_icon.parentNode.getElementsByTagName('p')[0].innerText;
+        label_text=map_icon.parentNode.parentNode.getElementsByTagName('p')[0].innerText;
     }
     map_icon_div.src=img_src;
-    map_icon_div.parentNode.getElementsByTagName('p')[0].innerText=label_text;
+    map_icon_div.parentNode.parentNode.getElementsByTagName('p')[0].innerText=label_text;
 }
 
 function update_civ_ban_icons(ind){
@@ -246,10 +256,10 @@ function update_civ_ban_icons(ind){
     }else{
         let civ_icon = document.getElementById(civ_id);
         img_src=civ_icon.src;
-        label_text=civ_icon.parentNode.getElementsByTagName('p')[0].innerText;
+        label_text=civ_icon.parentNode.parentNode.getElementsByTagName('p')[0].innerText;
     }
     civ_icon_div.src=img_src;
-    civ_icon_div.parentNode.getElementsByTagName('p')[0].innerText=label_text;
+    civ_icon_div.parentNode.parentNode.getElementsByTagName('p')[0].innerText=label_text;
 }
 
 function process_server_action(action_json){
@@ -297,27 +307,28 @@ function server_update_bans(bans_json){
     let host_bans_div = document.getElementById('hostBans');
     let guest_bans_div = document.getElementById('guestBans');
 
-    function f(icon_els, ban_ids){
+    function f(icon_els, ban_ids, ban_type_class){
         for(let n=0; n<ban_ids.length; n+=1){
             let id = ban_ids[n];
             let icon = document.getElementById(id);
             icon_els[n].src=icon.src;
 
-            label_text=icon.parentNode.getElementsByTagName('p')[0].innerText;
-            icon_els[n].parentNode.getElementsByTagName('p')[0].innerText=label_text;
+            label_text=icon.parentNode.parentNode.getElementsByTagName('p')[0].innerText;
+            icon_els[n].parentNode.parentNode.getElementsByTagName('p')[0].innerText=label_text;
 
             icon.classList.add('banned')
+            icon.classList.add(ban_type_class)
         }
     }
 
     let host_bans_map_icons = host_bans_div.getElementsByClassName('map_icon');
-    f(host_bans_map_icons, host_bans.map_bans)
+    f(host_bans_map_icons, host_bans.map_bans, 'host_banned')
     let host_bans_civ_icons = host_bans_div.getElementsByClassName('civ_icon');
-    f(host_bans_civ_icons, host_bans.civ_bans)
+    f(host_bans_civ_icons, host_bans.civ_bans, 'host_banned')
     let guest_bans_map_icons = guest_bans_div.getElementsByClassName('map_icon');
-    f(guest_bans_map_icons, guest_bans.map_bans)
+    f(guest_bans_map_icons, guest_bans.map_bans, 'guest_banned')
     let guest_bans_civ_icons = guest_bans_div.getElementsByClassName('civ_icon');
-    f(guest_bans_civ_icons, guest_bans.civ_bans)
+    f(guest_bans_civ_icons, guest_bans.civ_bans, 'guest_banned')
 
     if(my_bans_div){
         let bans_ready_btn = my_bans_div.getElementsByClassName('ready_btn')[0];
@@ -377,9 +388,9 @@ function server_update_round(action_json){
     btn.hidden=true;
     btn.onclick = undefined;
 
-    let src_map_template = document.getElementById(map_id).parentNode;
-    let src_host_civ_template = document.getElementById(host_civ_id).parentNode;
-    let src_guest_civ_template = document.getElementById(guest_civ_id).parentNode;
+    let src_map_template = document.getElementById(map_id).parentNode.parentNode;
+    let src_host_civ_template = document.getElementById(host_civ_id).parentNode.parentNode;
+    let src_guest_civ_template = document.getElementById(guest_civ_id).parentNode.parentNode;
 
     let round_div = document.getElementById('round_'+r);
     round_div.removeAttribute('style');
@@ -498,7 +509,7 @@ function server_update_instaban(action_json){
         prev_civ_div.getElementsByTagName('img')[0].classList.add('host_banned');
     }
 
-    let civ_div_template = document.getElementById(new_civ_id).parentNode;
+    let civ_div_template = document.getElementById(new_civ_id).parentNode.parentNode;
     let new_civ_div = create_icon_div(civ_div_template);
     civ_icons_div.appendChild(new_civ_div);
 
@@ -596,6 +607,8 @@ function update_guest_name(new_name){
 function create_icon_div(icon_div_template){
 
     let img_src = icon_div_template.getElementsByTagName('img')[0].src;
+    let host_ban_overlay_img_src = icon_div_template.getElementsByClassName('ban_host_overlay')[0].src;
+    let guest_ban_overlay_img_src = icon_div_template.getElementsByClassName('ban_guest_overlay')[0].src;
     let img_classes = icon_div_template.getElementsByTagName('img')[0].classList;
     let icon_text = icon_div_template.getElementsByTagName('p')[0].innerText;
 
@@ -603,13 +616,26 @@ function create_icon_div(icon_div_template){
     icon_img.src = img_src;
     icon_img.classList.add(img_classes);
 
+    let host_ban_overlay = document.createElement('img');
+    host_ban_overlay.src = host_ban_overlay_img_src;
+    host_ban_overlay.classList.add('ban_host_overlay');
+
+    let guest_ban_overlay = document.createElement('img');
+    guest_ban_overlay.src = guest_ban_overlay_img_src;
+    guest_ban_overlay.classList.add('ban_guest_overlay');
+
     let icon_label = document.createElement('p');
     icon_label.classList.add('label_text');
     icon_label.innerText = icon_text;
 
     let icon_div = document.createElement('div');
     icon_div.classList.add('icon_div');
-    icon_div.appendChild(icon_img);
+    let subicon_div = document.createElement('div');
+    subicon_div.classList.add('subicon_div');
+    icon_div.appendChild(subicon_div);
+    subicon_div.appendChild(icon_img);
+    subicon_div.appendChild(host_ban_overlay);
+    subicon_div.appendChild(guest_ban_overlay);
     icon_div.appendChild(icon_label);
     return icon_div;
 }
