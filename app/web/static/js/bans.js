@@ -612,6 +612,12 @@ function create_icon_div(icon_div_template){
     let img_classes = icon_div_template.getElementsByTagName('img')[0].classList;
     let icon_text = icon_div_template.getElementsByTagName('p')[0].innerText;
 
+    // hack to change the ban overlay for an instaban
+    // means that create_icon_div can only be used to create icon_div for instaban
+    // cross your fingers
+    host_ban_overlay_img_src = host_ban_overlay_img_src.replace('ban_', 'instaban_')
+    guest_ban_overlay_img_src = guest_ban_overlay_img_src.replace('ban_', 'instaban_')
+
     let icon_img = document.createElement('img');
     icon_img.src = img_src;
     icon_img.classList.add(img_classes);
