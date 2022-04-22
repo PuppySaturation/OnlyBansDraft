@@ -276,7 +276,7 @@ async def host_ws(draft_id: str):
                 if len(recv_json['name']) > 15:
                     await websocket.send_json({'response': 'Requested name longer than 15 characters, name is too long.'})
                     continue
-                if not re.fullmatch('[a-zA-Z0-9\\-_]+', recv_json['name']):
+                if not re.fullmatch('[a-zA-Z0-9\\-_ ]+', recv_json['name']):
                     await websocket.send_json({'response': 'Requested name may only contain letters, numbers and symbols - and _. Must also contain at least 1 character.'})
                     continue
                 draft_json['host_name'] = recv_json['name']
