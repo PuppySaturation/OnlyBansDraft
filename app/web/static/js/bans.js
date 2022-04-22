@@ -325,6 +325,7 @@ function process_server_action(action_json){
             server_update_instaban(action_json);
             break;
     }
+    window.scrollTo(0,document.body.scrollHeight);
 }
 
 function server_update_bans(bans_json){
