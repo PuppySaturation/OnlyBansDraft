@@ -98,7 +98,7 @@
     {% for r in range(rounds) %}
     <div id="round_{{r}}" class="round_selection">
         <h2>(<span class="host_name">Host</span>) Round {{r+1}} (<span class="guest_name">Guest</span>)</h2>
-        <p class="instruction_text" id="message_r{{r}}">click civ to insta-ban</p>
+        <p class="instruction_text" id="message_r{{r}}"></p>
         <div id="host_civ_r{{r}}" class="host_civ_selection">
         </div>
         <div id="map_r{{r}}" class="map_selection">
@@ -131,6 +131,8 @@
     <p class="instruction_text" id="mapBansText"></p>
     <p class="instruction_text" id="civBansText"></p>
     <p class="instruction_text" id="instaBansText"></p>
+    <button id="next_action_btn">Next action</button>
+    <button id="ff_actions_button">Fast forward all actions</button>
 </div>
 <div class="footer">
 <p>

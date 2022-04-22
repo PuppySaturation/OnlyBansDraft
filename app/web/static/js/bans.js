@@ -17,6 +17,7 @@ let img_placeholder_src = undefined;
 
 let view_type;
 let auto_respond=true;
+let fast_forward_actions=true;
 
 function init(view_type_arg, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
 
@@ -63,8 +64,23 @@ function init(view_type_arg, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
     for(let btn of buttons){
         btn.hidden=true;
     }
+
+    let next_action_btn = document.getElementById('next_action_btn');
+    let ff_actions_btn = document.getElementById('ff_actions_button');
     if(view_type=='watch'){
         // only spectating
+        fast_forward_actions=false;
+
+        next_action_btn.hidden=false;
+        ff_actions_btn.hidden=false;
+
+        next_action_btn.onclick = replay_actions;
+        ff_actions_btn.onclick = ()=>{
+           fast_forward_actions=true;
+           replay_actions();
+           fast_forward_actions=false;
+        };
+
         let map_list_div = document.getElementById('mapList');
         let map_list_text = map_list_div.getElementsByClassName('instruction_text')[0];
         map_list_text.innerText = "";
@@ -80,6 +96,9 @@ function init(view_type_arg, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
         insta_bans_text.hidden=true;
     }else{
         // interactive
+        next_action_btn.hidden=true;
+        ff_actions_btn.hidden=true
+
         for(let icon of map_icons_list){
             icon.onclick = ()=>{toggle_banned_map(icon);};
         }
@@ -99,7 +118,6 @@ function init(view_type_arg, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
         let ready_btn = my_bans_div.getElementsByClassName('ready_btn')[0];
         ready_btn.onclick = submit_bans;
         ready_btn.hidden=false;
-
     }
 
     let ws_protocol = undefined;
@@ -143,12 +161,31 @@ function init(view_type_arg, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
             update_guest_name(draft_json.guest_name);
 
             auto_respond=false;
-            for(let action_json of draft_json.actions){
-                process_server_action(action_json);
-            }
+            pending_actions = draft_json.actions;
+            replay_actions();
             auto_respond=true;
         }else{
             process_server_action(draft_json);
+        }
+    }
+}
+
+let pending_actions = [];
+function replay_actions(){
+    if(fast_forward_actions){
+        for(let action_json of pending_actions){
+            process_server_action(action_json);
+        }
+        pending_actions=[];
+    }else{
+        while(true){
+            let action_json = pending_actions[0];
+            pending_actions = pending_actions.slice(1);
+            process_server_action(action_json);
+            let skip_actions = new Set(['ready_round']);
+            if(!skip_actions.has(action_json.action)){
+                break;
+            };
         }
     }
 }
@@ -266,6 +303,7 @@ function update_civ_ban_icons(ind){
 }
 
 function process_server_action(action_json){
+    console.log(action_json);
     switch(action_json['action']){
         case 'update_names':
             update_host_name(action_json.host_name);
@@ -386,6 +424,10 @@ function server_update_round(action_json){
     if(r>0){
         clear_events_from_round(r-1);
     }
+    if(view_type=='watch'){
+        let msg_p = document.getElementById('message_r'+r);
+        msg_p.innerText = 'players are choosing bans';
+    }
 
     let btn = document.getElementById('start_r'+r+'_btn');
     btn.hidden=true;
@@ -469,7 +511,7 @@ function server_ready_round(action_json){
 
     if(view_type=='watch'){
         ready_btn.hidden=true;
-        msg_p.innerText = '';
+        msg_p.innerText = 'players are choosing bans';
     }else if(ready_target!=view_type){
         ready_btn.hidden=true;
         iban_host_btn.hidden=true;
