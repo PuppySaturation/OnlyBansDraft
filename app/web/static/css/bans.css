@@ -9,6 +9,31 @@ body {
     font-family: "BankGothic";
 }
 
+input {
+  padding-left: 10pt;
+  padding-right: 10pt;
+  padding-top: 5pt;
+  padding-bottom: 5pt;
+  font-family: "BankGothic";
+  background-color: black;
+  color: white;
+}
+
+button {
+  padding-left: 10pt;
+  padding-right: 10pt;
+  padding-top: 5pt;
+  padding-bottom: 5pt;
+  font-family: "BankGothic";
+  background-color: black;
+  color: white;
+  border-radius: 10pt;
+}
+
+button:hover {
+  background-color: rgb(50, 50, 50);
+}
+
 .banner {
     width: 300pt;
     display: block;
@@ -147,4 +172,12 @@ h1, h2 {
 
 button {
 margin: 5pt;
+}
+
+a:link {
+    color: lightblue;
+}
+
+a:visited {
+    color: lightpink;
 }

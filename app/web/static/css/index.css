@@ -6,11 +6,37 @@
 .banner {
     width: 200pt;
 }
+
 body {
     text-align: center;
     background-color: black;
     color: white;
     font-family: "BankGothic";
+}
+
+input {
+  padding-left: 10pt;
+  padding-right: 10pt;
+  padding-top: 5pt;
+  padding-bottom: 5pt;
+  font-family: "BankGothic";
+  background-color: black;
+  color: white;
+}
+
+button {
+  padding-left: 10pt;
+  padding-right: 10pt;
+  padding-top: 5pt;
+  padding-bottom: 5pt;
+  font-family: "BankGothic";
+  background-color: black;
+  color: white;
+  border-radius: 10pt;
+}
+
+button:hover {
+  background-color: rgb(50, 50, 50);
 }
 
 a:link {
