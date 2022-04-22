@@ -15,10 +15,10 @@ let ws_connection = undefined;
 let ws_updates = undefined;
 let img_placeholder_src = undefined;
 
-let view_type_param;
+let view_type;
 let auto_respond=true;
 
-function init(view_type, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
+function init(view_type_arg, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
 
     if(navigator.userAgent.indexOf('Chrome')==-1 &&
         navigator.userAgent.indexOf('Firefox')==-1){
@@ -27,7 +27,7 @@ function init(view_type, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
          "Please note, that some functionalities might not work.");
     }
 
-    view_type_param = view_type;
+    view_type = view_type_arg;
     map_bans_max = n_map_bans;
     civ_bans_max = n_civ_bans;
     insta_bans_max = n_insta_bans;
@@ -173,17 +173,17 @@ function submit_bans(){
 
 function toggle_banned(element, banned_list){
     if(!element.classList.contains('banned')){
-        if(view_type_param=='host'){
+        if(view_type=='host'){
             element.classList.add('host_banned');
-        }else if(view_type_param=='join'){
+        }else if(view_type=='join'){
             element.classList.add('guest_banned');
         }
         element.classList.add('banned')
         return true;
     }else{
-        if(view_type_param=='host'){
+        if(view_type=='host'){
             element.classList.remove('host_banned');
-        }else if(view_type_param=='join'){
+        }else if(view_type=='join'){
             element.classList.remove('guest_banned');
         }
         element.classList.remove('banned')
@@ -348,7 +348,7 @@ function server_update_bans(bans_json){
 }
 
 function enable_start_round(r){
-    if(view_type_param=='watch'){
+    if(view_type=='watch'){
         return;
     }
 
@@ -467,10 +467,10 @@ function server_ready_round(action_json){
     let iban_guest_btn = document.getElementById('ban_guest_r'+r+'_btn');
     let msg_p = document.getElementById('message_r'+r);
 
-    if(view_type_param=='watch'){
+    if(view_type=='watch'){
         ready_btn.hidden=true;
         msg_p.innerText = '';
-    }else if(ready_target!=view_type_param){
+    }else if(ready_target!=view_type){
         ready_btn.hidden=true;
         iban_host_btn.hidden=true;
         iban_guest_btn.hidden=true;
@@ -526,8 +526,8 @@ function server_update_instaban(action_json){
     let new_civ_div = create_icon_div(civ_div_template);
     civ_icons_div.appendChild(new_civ_div);
 
-    if((user=='guest' && view_type_param=='join') ||
-       (user=='host' && view_type_param=='host')){
+    if((user=='guest' && view_type=='join') ||
+       (user=='host' && view_type=='host')){
        insta_bans_count += 1;
        update_bans_text();
     }
@@ -553,7 +553,7 @@ function update_bans_text(){
    let civ_bans_text = document.getElementById('civBansText');
    let map_bans_text = document.getElementById('mapBansText');
    let insta_bans_text = document.getElementById('instaBansText');
-   if(view_type_param=='watch'){
+   if(view_type=='watch'){
         civ_bans_text.hidden=false;
         map_bans_text.hidden=false;
         insta_bans_text.hidden=false;
@@ -590,7 +590,7 @@ function update_host_name(new_name){
     for(let el of host_name_els){
         el.innerText=new_name;
     }
-    if(view_type_param=='host'){
+    if(view_type=='host'){
         let name_tb = document.getElementById('name_textbox');
         name_tb.value=new_name;
     }
@@ -601,7 +601,7 @@ function update_guest_name(new_name){
     for(let el of host_name_els){
         el.innerText=new_name;
     }
-    if(view_type_param=='join'){
+    if(view_type=='join'){
         let name_tb = document.getElementById('name_textbox');
         name_tb.value=new_name;
     }
