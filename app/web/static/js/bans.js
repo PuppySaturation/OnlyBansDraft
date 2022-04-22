@@ -28,6 +28,13 @@ function init(view_type_arg, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
          "Please note, that some functionalities might not work.");
     }
 
+    let url = document.URL;
+    let last_element = url.split('/').pop();
+    if(last_element == '1'){
+        let new_url = url.slice(0, -2);
+        history.pushState({}, '', new_url);
+    }
+
     view_type = view_type_arg;
     map_bans_max = n_map_bans;
     civ_bans_max = n_civ_bans;

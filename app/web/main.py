@@ -159,8 +159,11 @@ async def new_draft(draft_template: str):
     return redirect(url_for(f'host_draft', draft_id=draft_id))
 
 
-@app.route("/host/<string:draft_id>")
-async def host_draft(draft_id: str):
+@app.route("/host/<string:draft_id>", defaults={'override': 0})
+@app.route("/host/<string:draft_id>/<int:override>")
+async def host_draft(draft_id: str, override: int):
+    if override == 0 and draft_id in connected_hosts_ip:
+        return await render_template("join_draft.html", target='host', draft_id=draft_id)
     try:
         draft_json = load_draft_file(draft_id)
     except FileNotFoundError:
@@ -178,8 +181,11 @@ async def host_draft(draft_id: str):
     return await render_template("bans.html", **template_params)
 
 
-@app.route("/join/<string:draft_id>")
-async def join_draft(draft_id: str):
+@app.route("/join/<string:draft_id>", defaults={'override': 0})
+@app.route("/join/<string:draft_id>/<int:override>")
+async def join_draft(draft_id: str, override: int):
+    if override == 0 and draft_id in connected_guests_ip:
+        return await render_template("join_draft.html", target='guest', draft_id=draft_id)
     try:
         draft_json = load_draft_file(draft_id)
     except FileNotFoundError:
