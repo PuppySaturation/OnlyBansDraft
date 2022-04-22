@@ -526,28 +526,37 @@ async def broadcast_round_progress(draft_json):
     draft_id = draft_json['draft_id']
     r = draft_json['round_numb']
     action_json = {}
-    if r%2 == 0: # host first, guest second
-        if draft_json['draft_stage'] == 'host_round':
-            next_stage = 'guest_round'
-            action_json = {
-                'action': 'ready_round',
-                'target': 'join',
-            }
 
-        elif draft_json['draft_stage'] == 'guest_round':
-            next_stage = 'waiting_round'
-            action_json = {'action': 'finish_round'}
-
-    else: # guest first, host second
-        if draft_json['draft_stage'] == 'guest_round':
+    # previous action was also ready round, the instaban round is finished
+    if(draft_json['actions'][-2]['action'] == 'ready_round' and
+       draft_json['actions'][-1]['action'] == 'ready_round'):
+        next_stage = 'waiting_round'
+        action_json = {'action': 'finish_round'}
+    elif draft_json['draft_stage'] == 'host_round':
+        next_stage = 'guest_round'
+        action_json = {
+            'action': 'ready_round',
+            'target': 'join',
+        }
+    elif draft_json['draft_stage'] == 'guest_round':
+        next_stage = 'host_round'
+        action_json = {
+            'action': 'ready_round',
+            'target': 'host',
+        }
+    else:
+        if r % 2 == 0:  # host first
             next_stage = 'host_round'
             action_json = {
                 'action': 'ready_round',
                 'target': 'host',
             }
-        elif draft_json['draft_stage'] == 'host_round':
-            next_stage = 'waiting_round'
-            action_json = {'action': 'finish_round'}
+        else:  # guest first
+            next_stage = 'guest_round'
+            action_json = {
+                'action': 'ready_round',
+                'target': 'join',
+            }
 
     action_json['round_numb'] = r
     draft_json['draft_stage'] = next_stage
@@ -556,6 +565,7 @@ async def broadcast_round_progress(draft_json):
 
     await broadcast_update(action_json, draft_id)
     return draft_json
+
 
 async def broadcast_instaban(draft_id, user, target):
     draft_json = load_draft_file(draft_id)
@@ -586,6 +596,7 @@ async def broadcast_instaban(draft_id, user, target):
     draft_json['actions'].append(action_json)
     draft_json = update_draft_file(draft_id, draft_json)
     await broadcast_update(action_json, draft_id)
+    await broadcast_round_progress(draft_json)
     return
 
 
