@@ -16,6 +16,7 @@ let ws_updates = undefined;
 let img_placeholder_src = undefined;
 
 let view_type_param;
+let auto_respond=true;
 
 function init(view_type, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
 
@@ -141,9 +142,11 @@ function init(view_type, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
             update_host_name(draft_json.host_name);
             update_guest_name(draft_json.guest_name);
 
+            auto_respond=false;
             for(let action_json of draft_json.actions){
                 process_server_action(action_json);
             }
+            auto_respond=true;
         }else{
             process_server_action(draft_json);
         }
@@ -412,6 +415,11 @@ function server_update_round(action_json){
     iban_host_btn.innerText = 'Insta-ban '+host_civ_id;
     iban_guest_btn.innerText = 'Insta-ban '+guest_civ_id;
 
+    ready_btn.onclick = ()=>{
+        let action_json = {'action':'ready_round'};
+        ws_connection.send(JSON.stringify(action_json));
+    }
+
     iban_host_btn.onclick = ()=>{
         iban_host_btn.hidden=true;
         iban_guest_btn.hidden=true;
@@ -468,15 +476,20 @@ function server_ready_round(action_json){
         iban_guest_btn.hidden=true;
         msg_p.innerText = 'waiting for opponent';
     }else{
-        ready_btn.hidden=false;
-        if(insta_bans_count < insta_bans_max){
-            iban_host_btn.hidden=false;
-            iban_guest_btn.hidden=false;
-        }
-        msg_p.innerText = 'pick civ to insta-ban';
-        ready_btn.onclick = ()=>{
-            let action_json = {'action':'ready_round'};
-            ws_connection.send(JSON.stringify(action_json));
+        if(auto_respond && (insta_bans_count >= insta_bans_max)){
+            // no instabans left, just return ready_round
+            ready_btn.hidden=true;
+            iban_host_btn.hidden=true;
+            iban_guest_btn.hidden=true;
+            ready_btn.onclick();
+        }else
+        {
+            msg_p.innerText = 'pick civ to insta-ban';
+            ready_btn.hidden=false;
+             if(insta_bans_count < insta_bans_max){
+                iban_host_btn.hidden=false;
+                iban_guest_btn.hidden=false;
+             }
         }
     }
 
@@ -513,20 +526,10 @@ function server_update_instaban(action_json){
     let new_civ_div = create_icon_div(civ_div_template);
     civ_icons_div.appendChild(new_civ_div);
 
-
-
     if((user=='guest' && view_type_param=='join') ||
        (user=='host' && view_type_param=='host')){
        insta_bans_count += 1;
        update_bans_text();
-       ready_btn.hidden=false;
-        if(insta_bans_count < insta_bans_max){
-           iban_host_btn.hidden=false;
-           iban_guest_btn.hidden=false;
-       }else{
-           iban_host_btn.hidden=true;
-           iban_guest_btn.hidden=true;
-       }
     }
 }
 
