@@ -18,8 +18,7 @@ function goWatch(){
     </script>
 </head>
 <body>
-<img class='banner' src="{{url_for('static', filename='onlybans2.png')}}"
-</body>
+<img class='banner' src="{{url_for('static', filename='onlybans2.png')}}"/>
 <div>
 <p>Host the bans:</p>
     <a href="{{url_for('new_draft', draft_template='bo3')}}">Best of 3</a>
@@ -35,6 +34,7 @@ function goWatch(){
 <p>Watch the bans:</p>
     <input id="watch_id_input" class="input" placeholder="enter draft code here"></input>
     <button onclick="goWatch()">Watch</button>
+<p><a href="{{ url_for('static', filename='schedule.html') }}">Schedule for upcoming games here</a></p>
 </div>
-
+</body>
 </html>
