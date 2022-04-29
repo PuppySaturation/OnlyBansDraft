@@ -169,15 +169,19 @@ function init(view_type_arg, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
 
             auto_respond=false;
             pending_actions = draft_json.actions;
-            let msg_p = document.getElementById('messageText');
-            msg_p.innerText = 'New actions are available';
+            if(view_type=='watch'){
+                let msg_p = document.getElementById('messageText');
+                msg_p.innerText = 'New actions are available';
+            }
             replay_actions();
             auto_respond=true;
         }else{
             if(view_type=='watch'){
                 pending_actions.push(draft_json);
-                let msg_p = document.getElementById('messageText');
-                msg_p.innerText = 'New actions are available';
+                if(view_type=='watch'){
+                    let msg_p = document.getElementById('messageText');
+                    msg_p.innerText = 'New actions are available';
+                }
             }else{
                 process_server_action(draft_json);
             }
@@ -193,7 +197,9 @@ function replay_actions(){
         }
         pending_actions=[];
         let msg_p = document.getElementById('messageText');
-        msg_p.innerText = 'Caught up live';
+        if(view_type=='watch'){
+            msg_p.innerText = 'Caught up live';
+        }
     }else{
         while(true){
             if(pending_actions.length == 0){
@@ -209,7 +215,9 @@ function replay_actions(){
         }
         if(pending_actions.length == 0){
             let msg_p = document.getElementById('messageText');
-            msg_p.innerText = 'Caught up live';
+            if(view_type=='watch'){
+                msg_p.innerText = 'Caught up live';
+            }
         }
     }
 }
