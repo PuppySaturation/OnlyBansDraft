@@ -19,6 +19,9 @@ let view_type;
 let auto_respond=true;
 let fast_forward_actions=true;
 
+let proc_action_count = 0;
+let pending_actions = [];
+
 function init(view_type_arg, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
 
     if(navigator.userAgent.indexOf('Chrome')==-1 &&
@@ -168,7 +171,7 @@ function init(view_type_arg, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
             update_guest_name(draft_json.guest_name);
 
             auto_respond=false;
-            pending_actions = draft_json.actions;
+            pending_actions = draft_json.actions.slice(proc_action_count);
             if(view_type=='watch'){
                 let msg_p = document.getElementById('messageText');
                 msg_p.innerText = 'New actions are available';
@@ -189,7 +192,6 @@ function init(view_type_arg, draft_id, n_map_bans, n_civ_bans, n_insta_bans){
     }
 }
 
-let pending_actions = [];
 function replay_actions(){
     if(fast_forward_actions){
         for(let action_json of pending_actions){
@@ -342,18 +344,23 @@ function process_server_action(action_json){
             update_guest_name(action_json.guest_name);
             break;
         case 'update_bans':
+            proc_action_count += 1;
             server_update_bans(action_json);
             break;
         case 'start_round':
+            proc_action_count += 1;
             server_update_round(action_json);
             break;
         case 'ready_round':
+            proc_action_count += 1;
             server_ready_round(action_json);
             break;
         case 'finish_round':
+            proc_action_count += 1;
             server_finish_round(action_json);
             break;
         case 'update_instaban':
+            proc_action_count += 1;
             server_update_instaban(action_json);
             break;
     }
