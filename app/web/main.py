@@ -25,6 +25,7 @@ maps_icon_list = {
 }
 civs_icon_list = {
     'Aztecs' : 'CivIcons/aztecs.png',
+    #'Bengalis' : 'CivIcons/bengalis.png',
     'Berbers' : 'CivIcons/berbers.png',
     'Bohemians' : 'CivIcons/bohemians.png',
     'Britons' : 'CivIcons/britons.png',
@@ -35,9 +36,12 @@ civs_icon_list = {
     'Celts' : 'CivIcons/celts.png',
     'Chinese' : 'CivIcons/chinese.png',
     'Cumans' : 'CivIcons/cumans.png',
+    #'Dravidians' : 'CivIcons/dravidians.png',
     'Ethiopians' : 'CivIcons/ethiopians.png',
     'Franks' : 'CivIcons/franks.png',
     'Goths' : 'CivIcons/goths.png',
+    #'Gurjaras' : 'CivIcons/gurjaras.png',
+    #'Hindustanis' : 'CivIcons/hindustanis.png',
     'Huns' : 'CivIcons/huns.png',
     'Incas' : 'CivIcons/incas.png',
     'Indians' : 'CivIcons/indians.png',
